@@ -27,9 +27,11 @@ if _REPO_ROOT not in sys.path:
 
 UNIVERSE_DIR = os.path.join(_REPO_ROOT, "data", "universe")
 
+# Nasdaq-100 is intentionally absent: its Wikipedia page exposes no parseable
+# <table> of constituents (only index-history/navbox tables), so it ships as a
+# static data/universe/nasdaq100.txt seed instead of being fetched here.
 WIKI = {
     "sp500": ("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies", ("Symbol", "Ticker")),
-    "nasdaq100": ("https://en.wikipedia.org/wiki/Nasdaq-100", ("Ticker", "Symbol")),
     "sp100": ("https://en.wikipedia.org/wiki/S%26P_100", ("Symbol", "Ticker")),
     "dow30": ("https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average", ("Symbol", "Ticker")),
 }
@@ -178,11 +180,15 @@ def _fetch_iwb() -> list[str]:
     return [c for c in cells if _TICKER_RE.match(c)]
 
 
+# Sources that may legitimately be unavailable (bot-blocked / no parseable page).
+# A failure here is a soft note, not a hard error, when a shipped/prior file exists.
+_OPTIONAL = {"russell1000"}
+
+
 def run(args) -> int:
     only = set(s.strip() for s in args.only.split(",")) if args.only else None
     targets = {
         "sp500": lambda: _fetch_wiki(*WIKI["sp500"]),
-        "nasdaq100": lambda: _fetch_wiki(*WIKI["nasdaq100"]),
         "sp100": lambda: _fetch_wiki(*WIKI["sp100"]),
         "dow30": lambda: _fetch_wiki(*WIKI["dow30"]),
         "russell1000": _fetch_iwb,
@@ -195,14 +201,27 @@ def run(args) -> int:
         try:
             _write(name, fetch())
         except Exception as exc:  # noqa: BLE001
-            print(f"  FAILED {name}: {type(exc).__name__}: {exc}", file=sys.stderr)
-            rc = 1
+            have = os.path.exists(os.path.join(UNIVERSE_DIR, f"{name}.txt"))
+            if name in _OPTIONAL or have:
+                kept = " (kept existing file)" if have else " (optional — skipped)"
+                print(f"  note: {name} not refreshed{kept}: {type(exc).__name__}: {exc}",
+                      file=sys.stderr)
+            else:
+                print(f"  FAILED {name}: {type(exc).__name__}: {exc}", file=sys.stderr)
+                rc = 1
+
+    # Nasdaq-100 ships as a static file (no parseable Wikipedia table).
+    n100 = os.path.join(UNIVERSE_DIR, "nasdaq100.txt")
+    if os.path.exists(n100) and (not only or "nasdaq100" in only):
+        with open(n100, encoding="utf-8") as fh:
+            n = sum(1 for ln in fh if ln.strip() and not ln.startswith("#"))
+        print(f"nasdaq100: using shipped list ({n} tickers) — edit {n100} to update.")
     return rc
 
 
 def build_parser():
     p = argparse.ArgumentParser(description="Refresh index constituent lists")
-    p.add_argument("--only", default="", help="Comma-separated subset: sp500,nasdaq100,sp100,dow30,russell1000")
+    p.add_argument("--only", default="", help="Comma-separated subset: sp500,sp100,dow30,russell1000")
     return p
 
 
