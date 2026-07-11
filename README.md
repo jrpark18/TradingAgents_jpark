@@ -24,6 +24,14 @@ Claude Code **스킬(`.claude/skills/`)** 과 **서브에이전트(`.claude/agen
 각 분석 에이전트는 자기 관점의 **BUY/HOLD/SELL lean**만 제시하고, **최종 결정은
 `trade-decision`** 이 세 관점을 종합하여 내립니다.
 
+### 추가 기능 (연속 시장 스캔 · 메모리 · 백테스트)
+
+| 기능 | 스킬 / 스크립트 | 역할 |
+|------|----------------|------|
+| **시장 순환 스캔** | `market-scanner` / `scripts/screen_universe.py` | 대형 지수 유니버스를 순환하며 저평가·상승 후보 발굴 (2단계 퍼널) |
+| **메모리/학습** | `trade-journal` / `scripts/journal.py` | picks·decisions 기록 → 리뷰로 실현수익·알파 학습 |
+| **백테스트** | `backtest` / `scripts/backtest_screen.py` | 모멘텀 스크린을 과거 시점에 재구성해 성과 검증 |
+
 ---
 
 ## 아키텍처
@@ -94,6 +102,44 @@ Claude Code 세션에서 자연어로 요청하면 해당 스킬이 자동 활�
 
 ---
 
+## 연속 시장 스캔 (Continuous scanning)
+
+수백~수천 종목(나스닥100 · S&P100 · 다우30 · 러셀1000)을 **무인·헤드리스**로 순환
+스캔하여 저평가·상승 후보를 찾는 2단계 퍼널입니다.
+
+- **Stage 1 (저비용, LLM 없음):** `scripts/screen_universe.py` 가 종목별 지표
+  스냅샷 1회 호출로 밸류에이션·품질·모멘텀·성장을 점수화 → 저평가/상승/스위트스팟
+  후보를 랭킹. **로테이션 커서**로 매 실행마다 유니버스를 배치 단위로 순환합니다.
+- **Stage 2 (심층):** 상위 후보에만 `trade-decision` 멀티에이전트 분석을 적용.
+
+```bash
+# 유니버스 구성 (네트워크 필요; 4대 지수 전체 채우기)
+python scripts/refresh_universe.py            # 없으면 out-of-box는 Dow 30만
+
+# 한 번의 크론 틱: 다음 150종목 스캔, 상위 25개 저널 기록
+python scripts/screen_universe.py --batch-size 150 --top 25 --workers 8
+
+# 결과: data/scans/latest_scan.md (저평가 / 상승 / 저평가&상승 표)
+```
+
+### 크론 / 무인 실행 등록
+
+시스템 크론(예: 30분마다 한 배치씩 순환):
+
+```cron
+*/30 9-16 * * 1-5  cd /path/to/TradingAgents_jpark && \
+  python scripts/screen_universe.py --batch-size 150 --top 25 --workers 8 >> data/scans/cron.log 2>&1
+```
+
+또는 이 저장소를 **Claude Code on the web** 환경에서 운용한다면, Routine(스케줄 트리거)
+으로 세션을 주기적으로 깨워 `market-scanner` → (상위 후보) `trade-decision` 를 돌리게
+할 수 있습니다. 원하면 등록해 드립니다.
+
+> 스캔은 정량 스크린이라 LLM 비용이 들지 않습니다. 비싼 멀티에이전트 분석은
+> 상위 후보에만 적용해 비용을 통제하세요.
+
+---
+
 ## 검증 (Verification)
 
 ```bash
@@ -105,7 +151,15 @@ python scripts/market_data.py indicators --help
 python scripts/market_data.py prices AAPL --start 2026-06-20 --end 2026-07-01
 python scripts/market_data.py fundamentals AAPL --date 2026-07-01
 
-# 3) 엔진 단위 테스트
+# 3) 스캐너 스코어링 단위 테스트 (네트워크 불필요, 순수 로직)
+pytest -q tests/test_screener.py
+
+# 4) 스캐너/저널/백테스트 배선 확인
+python scripts/screen_universe.py --help
+python scripts/journal.py summary
+python scripts/backtest_screen.py --asof 2026-01-15 --indices dow30 --top 5   # 네트워크 필요
+
+# 5) 전체 엔진 단위 테스트
 pytest -q
 ```
 

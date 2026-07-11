@@ -1,0 +1,50 @@
+# Seed universe — large caps spanning Nasdaq-100 / S&P 100 / Dow 30.
+# Used out-of-the-box so the scanner works before you run refresh_universe.py.
+# One ticker per line; '#' comments and blank lines are ignored.
+# For the full authoritative index constituents, run:
+#     python scripts/refresh_universe.py
+AAPL
+MSFT
+NVDA
+AMZN
+GOOGL
+GOOG
+META
+AVGO
+TSLA
+BRK-B
+JPM
+V
+LLY
+UNH
+XOM
+MA
+JNJ
+COST
+HD
+PG
+WMT
+NFLX
+BAC
+ABBV
+CRM
+CVX
+KO
+AMD
+PEP
+TMO
+ADBE
+WFC
+MRK
+CSCO
+ACN
+MCD
+LIN
+ABT
+ORCL
+PM
+IBM
+GE
+CAT
+GS
+HON

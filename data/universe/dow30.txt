@@ -1,0 +1,32 @@
+# Dow Jones Industrial Average (30). "dow100" in the request → the real DJIA.
+# Refresh with: python scripts/refresh_universe.py
+AAPL
+AMGN
+AXP
+BA
+CAT
+CRM
+CSCO
+CVX
+DIS
+GS
+HD
+HON
+IBM
+JNJ
+JPM
+KO
+MCD
+MMM
+MRK
+MSFT
+NKE
+NVDA
+PG
+SHW
+TRV
+UNH
+V
+VZ
+WMT
+AMZN

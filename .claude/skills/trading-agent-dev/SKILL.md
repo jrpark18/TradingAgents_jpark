@@ -21,11 +21,21 @@ consistently. Use it whenever you change how the agents analyze or decide.
   technical-analysis/           기술적 분석 (차트)
   news-analysis/                뉴스 분석 (트렌드·맥락)
   trade-decision/               오케스트레이션 → 매수·매도 결정
+  market-scanner/               시장 순환 스캔 → 저평가/상승 후보 발굴 (Stage 1→2)
+  trade-journal/                메모리/학습 (picks·decisions·review)
+  backtest/                     모멘텀 스크린 백테스트
   trading-agent-dev/            (this) 스킬 개발
 .claude/agents/                 ← parallelizable sub-agents (Task tool targets)
   fundamental-analyst.md, technical-analyst.md, news-analyst.md, trade-orchestrator.md
 scripts/market_data.py          ← the ONE data seam (wraps route_to_vendor)
+scripts/screen_universe.py      ← Stage-1 headless screener (cron-friendly)
+scripts/journal.py              ← journal/memory CLI
+scripts/backtest_screen.py      ← momentum backtest
+scripts/refresh_universe.py     ← refresh index constituents
+tradingagents/scanner/          ← screener scoring, universe, journal (pure + I/O split)
 tradingagents/                  ← data + LLM engine (dataflows, llm_clients, config)
+data/universe/                  ← index constituent lists (*.txt)
+data/scans/, data/journal/      ← scan outputs, persistent memory
 ```
 
 **Design rule:** every skill/agent gets real data *only* through
@@ -52,6 +62,23 @@ vendor routing, keys, and fallbacks in one place (`tradingagents/dataflows/`).
    an `add_parser` block, following the existing pattern).
 3. Reference the new subcommand from whichever skill should use it.
 4. Verify: `python scripts/market_data.py <subcommand> --help`, then a live call.
+
+### Extend the scanner (screener scoring / new dimension)
+- Scoring is **pure** in `tradingagents/scanner/screener.py` (`score_valuation`,
+  `score_quality`, `score_momentum`, `score_growth`, blended by `score_ticker`).
+  Add a dimension by writing a `score_*` function + a weight in `_WEIGHTS`, then a
+  unit test in `tests/test_screener.py` (no network needed — feed synthetic
+  metrics). Keep I/O (`fetch_metrics`) separate so scoring stays testable.
+- New metric fields: add them to `_INFO_MAP` (yfinance `info` key → normalised key).
+
+### Extend memory / backtest
+- Journal entry types live in `tradingagents/scanner/journal.py`. `review`/`summary`
+  are the learning loop. Add a new entry type by adding a `log_*` helper + a
+  markdown line in `_append_markdown`.
+- A **valuation** backtest is the known gap (yfinance `info` is live-only). To add
+  it, compute point-in-time ratios from historical statements
+  (`get_income_statement`/`get_balance_sheet` already filter look-ahead via
+  `filter_financials_by_date`) instead of `info`.
 
 ### Reference the upstream framework
 This repo is built on **TauricResearch/TradingAgents**. Its LangGraph agent
