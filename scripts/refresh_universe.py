@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import io
 import os
+import re
 import sys
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,40 +51,85 @@ def _write(name: str, tickers: list[str]) -> None:
     print(f"  wrote {len(tickers)} tickers -> {path}")
 
 
-def _fetch_wiki(url: str, candidate_cols) -> list[str]:
+# A cell that looks like a US ticker after stripping wiki footnote markers.
+_FOOTNOTE = re.compile(r"\[.*?\]")
+_TICKER_RE = re.compile(r"^[A-Z][A-Z.\-]{0,5}$")
+
+
+def _clean_cell(v: str) -> str:
+    return _FOOTNOTE.sub("", str(v)).strip().upper()
+
+
+def _fetch_wiki(url: str, candidate_cols=None) -> list[str]:
+    """Find the constituents column by content, not header name.
+
+    Wikipedia periodically renames/reorders columns and wraps headers in
+    MultiIndexes, so instead of matching 'Ticker'/'Symbol' we scan every column
+    of every table and pick the one whose cells are overwhelmingly ticker-like.
+    """
     import pandas as pd
     import requests
 
     html = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30).text
     tables = pd.read_html(io.StringIO(html))
+
+    def ticker_cells(tbl, col):
+        cells = [c for c in (_clean_cell(v) for v in tbl[col].dropna().tolist()) if c]
+        if len(cells) < 25:
+            return None
+        hits = [c for c in cells if _TICKER_RE.match(c)]
+        return hits if len(hits) / len(cells) >= 0.8 else None
+
+    def header_text(col) -> str:
+        return " ".join(str(p) for p in (col if isinstance(col, tuple) else (col,))).lower()
+
+    # Pass 1: a column explicitly headed 'symbol'/'ticker' (the normal case,
+    # robust even if other short-text columns look ticker-like).
     for tbl in tables:
-        cols = {str(c).strip(): c for c in tbl.columns}
-        for want in candidate_cols:
-            if want in cols:
-                vals = tbl[cols[want]].dropna().astype(str).tolist()
-                # Heuristic: a constituents table has many short ticker-like cells.
-                if len(vals) >= 25 and all(len(v) <= 6 for v in vals[:5]):
-                    return vals
-    raise ValueError(f"no ticker column {candidate_cols} found among tables")
+        for col in tbl.columns:
+            if ("symbol" in header_text(col) or "ticker" in header_text(col)):
+                hits = ticker_cells(tbl, col)
+                if hits:
+                    return hits
+    # Pass 2: fall back to the column with the most ticker-like cells.
+    best: list[str] = []
+    for tbl in tables:
+        for col in tbl.columns:
+            hits = ticker_cells(tbl, col)
+            if hits and len(hits) > len(best):
+                best = hits
+    if not best:
+        raise ValueError("no ticker-like column found among tables")
+    return best
 
 
 def _fetch_iwb() -> list[str]:
+    """Parse the iShares IWB (Russell 1000) holdings CSV.
+
+    The file has a metadata preamble, then a header row whose first field is
+    'Ticker'. Handle a BOM and quoted fields; on failure include a snippet of
+    what came back so the format can be diagnosed (iShares occasionally serves
+    an HTML block page instead of the CSV).
+    """
     import pandas as pd
     import requests
 
     raw = requests.get(IWB_CSV, headers={"User-Agent": "Mozilla/5.0"}, timeout=60).content
-    text = raw.decode("utf-8", errors="ignore")
-    # The CSV has preamble lines before the header row containing "Ticker".
+    text = raw.decode("utf-8-sig", errors="ignore")
     lines = text.splitlines()
-    start = next((i for i, ln in enumerate(lines) if ln.lower().startswith("ticker,")
-                  or ",ticker," in ln.lower() or ln.split(",")[0].strip('"').lower() == "ticker"), None)
+    start = next(
+        (i for i, ln in enumerate(lines)
+         if ln.split(",")[0].strip().strip('"').strip().lower() == "ticker"),
+        None,
+    )
     if start is None:
-        raise ValueError("could not locate header row in IWB CSV")
+        snippet = text[:300].replace("\n", " ⏎ ")
+        raise ValueError(f"could not locate header row in IWB CSV; got: {snippet!r}")
     df = pd.read_csv(io.StringIO("\n".join(lines[start:])))
     col = next((c for c in df.columns if str(c).strip().lower() == "ticker"), df.columns[0])
-    tickers = df[col].dropna().astype(str).tolist()
-    # Drop cash/other non-equity rows (blank, '-', long names).
-    return [t for t in tickers if t and t not in {"-", "--"} and len(t) <= 6]
+    cells = [_clean_cell(v) for v in df[col].dropna().tolist()]
+    # Keep equity tickers; drop cash/derivative rows ('-', blanks, long names).
+    return [c for c in cells if _TICKER_RE.match(c)]
 
 
 def run(args) -> int:
