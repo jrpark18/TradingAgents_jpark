@@ -55,18 +55,40 @@ def _write(name: str, tickers: list[str]) -> None:
 # A cell that looks like a US ticker after stripping wiki footnote markers.
 _FOOTNOTE = re.compile(r"\[.*?\]")
 _TICKER_RE = re.compile(r"^[A-Z][A-Z.\-]{0,5}$")
+# Exchange tokens that appear in prefixed cells like "NASDAQ: AAPL" — skip them
+# so token extraction returns the real ticker, not the exchange name.
+_EXCHANGE_WORDS = {"NASDAQ", "NYSE", "NYSEARCA", "AMEX", "CBOE", "BATS", "ARCA", "OTC"}
 
 
 def _clean_cell(v: str) -> str:
     return _FOOTNOTE.sub("", str(v)).strip().upper()
 
 
+def _ticker_token(cell: str) -> str | None:
+    """Extract a ticker from a possibly-prefixed cell.
+
+    Handles a bare ticker ('AAPL'), an exchange prefix ('NASDAQ: AAPL'), or a
+    trailing name ('AAPL (Apple Inc.)') by taking the first ticker-like token
+    that is not an exchange name. Used only for columns whose header already
+    says 'Ticker'/'Symbol', so aggressive extraction is safe there.
+    """
+    cell = _clean_cell(cell)
+    if _TICKER_RE.match(cell):
+        return cell
+    for tok in re.split(r"[^A-Z.\-]+", cell):
+        if tok and tok not in _EXCHANGE_WORDS and _TICKER_RE.match(tok):
+            return tok
+    return None
+
+
 def _fetch_wiki(url: str, candidate_cols=None) -> list[str]:
     """Find the constituents column by content, not header name.
 
     Wikipedia periodically renames/reorders columns and wraps headers in
-    MultiIndexes, so instead of matching 'Ticker'/'Symbol' we scan every column
-    of every table and pick the one whose cells are overwhelmingly ticker-like.
+    MultiIndexes, so instead of trusting a header name we scan every column of
+    every table. A column explicitly headed 'Ticker'/'Symbol' is parsed
+    leniently (extracting a ticker even from 'NASDAQ: AAPL'); otherwise a column
+    qualifies only if its cells are overwhelmingly bare tickers.
     """
     import pandas as pd
     import requests
@@ -74,34 +96,43 @@ def _fetch_wiki(url: str, candidate_cols=None) -> list[str]:
     html = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30).text
     tables = pd.read_html(io.StringIO(html))
 
-    def ticker_cells(tbl, col):
-        cells = [c for c in (_clean_cell(v) for v in tbl[col].dropna().tolist()) if c]
-        if len(cells) < 25:
-            return None
-        hits = [c for c in cells if _TICKER_RE.match(c)]
-        return hits if len(hits) / len(cells) >= 0.8 else None
-
     def header_text(col) -> str:
         return " ".join(str(p) for p in (col if isinstance(col, tuple) else (col,))).lower()
 
-    # Pass 1: a column explicitly headed 'symbol'/'ticker' (the normal case,
-    # robust even if other short-text columns look ticker-like).
+    def cells_of(tbl, col):
+        return [c for c in (str(v).strip() for v in tbl[col].dropna().tolist()) if c]
+
+    # Pass 1: a column explicitly headed 'symbol'/'ticker' — extract tickers even
+    # from exchange-prefixed / name-suffixed cells.
     for tbl in tables:
         for col in tbl.columns:
-            if ("symbol" in header_text(col) or "ticker" in header_text(col)):
-                hits = ticker_cells(tbl, col)
-                if hits:
+            if "symbol" in header_text(col) or "ticker" in header_text(col):
+                cells = cells_of(tbl, col)
+                if len(cells) < 20:
+                    continue
+                hits = [t for t in (_ticker_token(c) for c in cells) if t]
+                if hits and len(hits) / len(cells) >= 0.7:
                     return hits
-    # Pass 2: fall back to the column with the most ticker-like cells.
+    # Pass 2: fall back to the column of mostly-bare tickers (strict, to avoid
+    # matching a Company-name column).
     best: list[str] = []
     for tbl in tables:
         for col in tbl.columns:
-            hits = ticker_cells(tbl, col)
-            if hits and len(hits) > len(best):
+            cells = [_clean_cell(v) for v in cells_of(tbl, col)]
+            cells = [c for c in cells if c]
+            if len(cells) < 25:
+                continue
+            hits = [c for c in cells if _TICKER_RE.match(c)]
+            if len(hits) / len(cells) >= 0.8 and len(hits) > len(best):
                 best = hits
-    if not best:
-        raise ValueError("no ticker-like column found among tables")
-    return best
+    if best:
+        return best
+    # Diagnostic: report what we actually got so a structural change is fixable.
+    struct = " | ".join(
+        f"tbl{i}({len(t)}r): " + ", ".join(str(c) for c in t.columns)[:70]
+        for i, t in enumerate(tables[:8])
+    )
+    raise ValueError(f"no ticker-like column found among {len(tables)} tables. {struct}")
 
 
 def _fetch_iwb() -> list[str]:
