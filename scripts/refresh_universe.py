@@ -28,6 +28,7 @@ if _REPO_ROOT not in sys.path:
 UNIVERSE_DIR = os.path.join(_REPO_ROOT, "data", "universe")
 
 WIKI = {
+    "sp500": ("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies", ("Symbol", "Ticker")),
     "nasdaq100": ("https://en.wikipedia.org/wiki/Nasdaq-100", ("Ticker", "Symbol")),
     "sp100": ("https://en.wikipedia.org/wiki/S%26P_100", ("Symbol", "Ticker")),
     "dow30": ("https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average", ("Symbol", "Ticker")),
@@ -114,7 +115,15 @@ def _fetch_iwb() -> list[str]:
     import pandas as pd
     import requests
 
-    raw = requests.get(IWB_CSV, headers={"User-Agent": "Mozilla/5.0"}, timeout=60).content
+    # iShares bot-blocks bare requests (returns an HTML page). Present fuller
+    # browser-like headers; if it still serves HTML we raise with a snippet.
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept": "text/csv,application/csv,*/*",
+        "Referer": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/",
+    }
+    raw = requests.get(IWB_CSV, headers=headers, timeout=60).content
     text = raw.decode("utf-8-sig", errors="ignore")
     lines = text.splitlines()
     start = next(
@@ -123,8 +132,14 @@ def _fetch_iwb() -> list[str]:
         None,
     )
     if start is None:
-        snippet = text[:300].replace("\n", " ⏎ ")
-        raise ValueError(f"could not locate header row in IWB CSV; got: {snippet!r}")
+        looks_html = text.lstrip().lower().startswith(("<!doctype", "<html"))
+        hint = (" iShares served an HTML block page, not the CSV. Russell 1000 is "
+                "optional — sp500 covers most of it. To use Russell 1000 anyway, "
+                "download the IWB holdings CSV in a browser and save its tickers "
+                "to data/universe/russell1000.txt (one per line)."
+                if looks_html else "")
+        snippet = text[:200].replace("\n", " ⏎ ")
+        raise ValueError(f"could not locate header row in IWB CSV.{hint} got: {snippet!r}")
     df = pd.read_csv(io.StringIO("\n".join(lines[start:])))
     col = next((c for c in df.columns if str(c).strip().lower() == "ticker"), df.columns[0])
     cells = [_clean_cell(v) for v in df[col].dropna().tolist()]
@@ -135,6 +150,7 @@ def _fetch_iwb() -> list[str]:
 def run(args) -> int:
     only = set(s.strip() for s in args.only.split(",")) if args.only else None
     targets = {
+        "sp500": lambda: _fetch_wiki(*WIKI["sp500"]),
         "nasdaq100": lambda: _fetch_wiki(*WIKI["nasdaq100"]),
         "sp100": lambda: _fetch_wiki(*WIKI["sp100"]),
         "dow30": lambda: _fetch_wiki(*WIKI["dow30"]),
@@ -155,7 +171,7 @@ def run(args) -> int:
 
 def build_parser():
     p = argparse.ArgumentParser(description="Refresh index constituent lists")
-    p.add_argument("--only", default="", help="Comma-separated subset: nasdaq100,sp100,dow30,russell1000")
+    p.add_argument("--only", default="", help="Comma-separated subset: sp500,nasdaq100,sp100,dow30,russell1000")
     return p
 
 

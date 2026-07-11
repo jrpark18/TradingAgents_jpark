@@ -24,14 +24,17 @@ _CURSOR_PATH = os.path.join(_REPO_ROOT, "data", "scans", ".cursor.json")
 # warning rather than crashing, so a fresh checkout still scans the seed set.
 INDEX_FILES = {
     "seed": "seed_megacaps.txt",
+    "sp500": "sp500.txt",
     "nasdaq100": "nasdaq100.txt",
     "sp100": "sp100.txt",
     "dow30": "dow30.txt",
     "russell1000": "russell1000.txt",
 }
 
-# The four indices the scanner targets by default (per the project brief).
-DEFAULT_INDICES = ("nasdaq100", "sp100", "dow30", "russell1000")
+# Indices the scanner targets by default. S&P 500 is the reliable ~500-name
+# broad universe (Russell 1000 ⊃ S&P 500, but the iShares source is bot-blocked,
+# so russell1000 is best-effort and simply skipped when its file is absent).
+DEFAULT_INDICES = ("sp500", "nasdaq100", "sp100", "dow30", "russell1000")
 
 
 def _read_ticker_file(path: str) -> list[str]:

@@ -34,8 +34,12 @@ logs top picks to the journal (see `trade-journal`). Read `latest_scan.md` (or t
 console table) to get the shortlist.
 
 **Universe:** out of the box only Dow 30 ships populated. Run
-`python scripts/refresh_universe.py` (needs network) to populate the full
-Nasdaq-100 / S&P 100 / Russell 1000 lists (~1000 names) in `data/universe/`.
+`python scripts/refresh_universe.py` (needs network) to populate **S&P 500 /
+Nasdaq-100 / S&P 100 / Dow 30** (~500+ names) in `data/universe/`. S&P 500 is the
+reliable broad universe; **Russell 1000 is best-effort** (its iShares source is
+bot-blocked — on failure, save IWB holdings tickers to
+`data/universe/russell1000.txt` manually). Russell 1000 ⊃ S&P 500, so coverage is
+largely preserved either way.
 
 ## Stage 2 — deep dive (multi-agent)
 
