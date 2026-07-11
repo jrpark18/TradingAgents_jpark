@@ -230,3 +230,6 @@ data/scans/.cursor.json
 # want cross-session learning. Uncomment to treat it as local-only instead:
 # data/journal/journal.jsonl
 # data/journal/journal.md
+
+# Generated dashboard HTML (scripts/build_dashboard.py)
+data/dashboard/*.html

@@ -31,6 +31,7 @@ Claude Code **스킬(`.claude/skills/`)** 과 **서브에이전트(`.claude/agen
 | **시장 순환 스캔** | `market-scanner` / `scripts/screen_universe.py` | 대형 지수 유니버스를 순환하며 저평가·상승 후보 발굴 (2단계 퍼널) |
 | **메모리/학습** | `trade-journal` / `scripts/journal.py` | picks·decisions 기록 → 리뷰로 실현수익·알파 학습 |
 | **백테스트** | `backtest` / `scripts/backtest_screen.py` | 모멘텀 스크린을 과거 시점에 재구성해 성과 검증 |
+| **모니터링 대시보드** | `market-dashboard` / `scripts/build_dashboard.py` | 스캔 결과를 HTML 대시보드로 시각화, 실시간 자동새로고침 |
 
 ---
 
@@ -137,6 +138,22 @@ python scripts/screen_universe.py --batch-size 150 --top 25 --workers 8
 
 > 스캔은 정량 스크린이라 LLM 비용이 들지 않습니다. 비싼 멀티에이전트 분석은
 > 상위 후보에만 적용해 비용을 통제하세요.
+
+### 실시간 모니터링 대시보드
+
+스캔 결과를 자기완결형 HTML 대시보드로 봅니다(외부 의존성 없음, 더블클릭으로 열림).
+KPI 타일 · 섹터/신호 차트 · 종합점수 분포 · 저평가/상승/스위트스팟 랭킹 테이블(적자
+밸류트랩 경고 포함). 라이트/다크 테마 지원.
+
+```bash
+# 1회 생성 후 브라우저로 열기
+python scripts/build_dashboard.py            # → data/dashboard/dashboard.html
+
+# 실시간 모니터: localhost:8787, 요청마다 재생성 + 자동 새로고침
+python scripts/build_dashboard.py --serve --port 8787 --refresh 60
+```
+
+스캐너를 크론으로 돌리면서 `--serve`를 띄워두면 새 스캔이 자동 반영됩니다.
 
 ---
 

@@ -107,6 +107,8 @@ def run(args: argparse.Namespace) -> int:
         "errors": len(errors),
         "batch_offset": batch.offset,
         "next_offset": batch.next_offset,
+        # All composite scores (for the dashboard's distribution chart).
+        "composites": [s.composite for s in scores],
         "top_composite": [s.to_dict() for s in scores[: args.top]],
         "undervalued": [s.to_dict() for s in undervalued],
         "uptrend": [s.to_dict() for s in uptrend],
