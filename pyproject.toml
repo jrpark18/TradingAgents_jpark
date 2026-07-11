@@ -44,6 +44,13 @@ dev = [
 bedrock = [
     "langchain-aws>=1.5.0",
 ]
+# Continuous market scanner (scripts/screen_universe.py, refresh_universe.py).
+# The core data deps (yfinance/pandas/stockstats) are already required; this adds
+# lxml so scripts/refresh_universe.py can parse index constituents via read_html.
+# pip install "tradingagents[scanner]"
+scanner = [
+    "lxml>=5.0",
+]
 
 [project.scripts]
 tradingagents = "cli.main:app"

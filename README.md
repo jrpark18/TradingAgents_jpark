@@ -61,8 +61,8 @@ tradingagents/                  데이터·LLM 엔진 (dataflows, llm_clients, c
 기본 벤더는 **키 없이 동작(yfinance)** 하며, macro만 `FRED_API_KEY` 가 필요합니다.
 
 ```bash
-# 설치 (엔진 의존성)
-pip install -e .          # 또는 최소: pip install yfinance pandas stockstats requests pytz parsel
+# 설치 (엔진 데이터 계층 + 스캐너)
+pip install -e ".[scanner]"   # 스캐너 포함(권장). 최소: pip install yfinance pandas stockstats requests pytz parsel lxml
 
 # 사용 예 (레포 루트에서)
 python scripts/market_data.py prices        AAPL --start 2026-06-01 --end 2026-07-01
