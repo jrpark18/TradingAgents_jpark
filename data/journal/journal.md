@@ -1,0 +1,334 @@
+# Trading journal
+
+Append-only log of scanner picks and trade decisions. See `journal.jsonl` for the machine-readable source.
+
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** CRM (composite 58.0, val 69.4 / mom 33.8) entry $163.32 value_candidate
+- `2026-07-11` **PICK** CVX (composite 60.2, val 68.7 / mom 59.3) entry $176.4 value_candidate
+- `2026-07-11` **PICK** DIS (composite 53.2, val 68.2 / mom 33.8) entry $95.62 value_candidate
+- `2026-07-11` **PICK** JPM (composite 71.9, val 65.8 / mom 76.1) entry $336.47 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** UNH (composite 62.1, val 61.3 / mom 76.2) entry $424.62 momentum_candidate
+- `2026-07-11` **PICK** AAPL (composite 61.5, val 37.5 / mom 76.2) entry $315.32 momentum_candidate
+- `2026-07-11` **PICK** KO (composite 62.6, val 43.0 / mom 76.1) entry $83.49 momentum_candidate
+- `2026-07-11` **PICK** JNJ (composite 60.0, val 42.8 / mom 76.1) entry $256.98 momentum_candidate
+- `2026-07-11` **PICK** MRK (composite 59.6, val 43.6 / mom 75.8) entry $123.54 momentum_candidate
+- `2026-07-11` **PICK** CSCO (composite 63.3, val 44.3 / mom 75.5) entry $121.31 momentum_candidate
+- `2026-07-11` **PICK** GS (composite 67.8, val 64.9 / mom 75.2) entry $1055.18 momentum_candidate
+- `2026-07-11` **PICK** CAT (composite 60.9, val 41.7 / mom 74.8) entry $952.41 momentum_candidate
+- `2026-07-11` **PICK** V (composite 64.0, val 42.7 / mom 74.0) entry $348.97 momentum_candidate
+- `2026-07-11` **PICK** AMGN (composite 60.6, val 50.7 / mom 73.9) entry $363.39 momentum_candidate
+- `2026-07-11` **PICK** NVDA (composite 69.5, val 46.9 / mom 71.9) entry $210.96 momentum_candidate
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** ACN (composite 59.1, val 75.8 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.3 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** COP (composite 62.5, val 72.8 / mom 59.8) entry $109.04 value_candidate
+- `2026-07-11` **PICK** FDX (composite 64.4, val 72.3 / mom 66.1) entry $314.69 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** T (composite 52.9, val 71.8 / mom 33.8) entry $21.13 value_candidate
+- `2026-07-11` **PICK** WFC (composite 67.5, val 71.6 / mom 60.5) entry $87.16 value_candidate
+- `2026-07-11` **PICK** INTU (composite 59.3, val 70.9 / mom 33.8) entry $274.96 value_candidate
+- `2026-07-11` **PICK** TMUS (composite 56.1, val 70.9 / mom 43.0) entry $187.61 value_candidate
+- `2026-07-11` **PICK** LOW (composite 51.9, val 70.0 / mom 33.8) entry $211.63 value_candidate
+- `2026-07-11` **PICK** CRM (composite 58.0, val 69.4 / mom 33.8) entry $163.32 value_candidate
+- `2026-07-11` **PICK** XOM (composite 61.0, val 69.2 / mom 59.8) entry $138.88 value_candidate
+- `2026-07-11` **PICK** CVX (composite 60.2, val 68.7 / mom 59.3) entry $176.4 value_candidate
+- `2026-07-11` **PICK** DIS (composite 53.2, val 68.2 / mom 33.8) entry $95.62 value_candidate
+- `2026-07-11` **PICK** USB (composite 70.8, val 67.5 / mom 76.2) entry $62.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BKNG (composite 61.5, val 67.3 / mom 45.1) entry $178.39 value_candidate
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ADBE (composite 57.2, val 66.4 / mom 33.8) entry $223.64 value_candidate
+- `2026-07-11` **PICK** MDLZ (composite 62.3, val 66.3 / mom 58.3) entry $58.83 value_candidate
+- `2026-07-11` **PICK** MDT (composite 60.1, val 66.2 / mom 44.6) entry $83.87 value_candidate
+- `2026-07-11` **PICK** JPM (composite 71.9, val 65.8 / mom 76.1) entry $336.47 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** COF (composite 56.3, val 65.6 / mom 44.6) entry $201.52 value_candidate
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** MS (composite 67.5, val 58.3 / mom 76.2) entry $222.28 momentum_candidate
+- `2026-07-11` **PICK** GD (composite 65.1, val 57.2 / mom 76.2) entry $375.06 momentum_candidate
+- `2026-07-11` **PICK** AMD (composite 65.0, val 39.9 / mom 76.2) entry $557.89 momentum_candidate
+- `2026-07-11` **PICK** LLY (composite 64.5, val 38.3 / mom 76.2) entry $1188.58 momentum_candidate
+- `2026-07-11` **PICK** UNH (composite 62.1, val 61.3 / mom 76.2) entry $424.62 momentum_candidate
+- `2026-07-11` **PICK** AAPL (composite 61.5, val 37.5 / mom 76.2) entry $315.32 momentum_candidate
+- `2026-07-11` **PICK** SBUX (composite 60.5, val 55.3 / mom 76.2) entry $106.01 momentum_candidate
+- `2026-07-11` **PICK** UNP (composite 60.1, val 44.6 / mom 76.2) entry $286.96 momentum_candidate
+- `2026-07-11` **PICK** KO (composite 62.6, val 43.0 / mom 76.1) entry $83.49 momentum_candidate
+- `2026-07-11` **PICK** JNJ (composite 60.0, val 42.8 / mom 76.1) entry $256.98 momentum_candidate
+- `2026-07-11` **PICK** LIN (composite 61.2, val 46.3 / mom 76.0) entry $529.79 momentum_candidate
+- `2026-07-11` **PICK** TXN (composite 65.3, val 38.7 / mom 75.8) entry $311.46 momentum_candidate
+- `2026-07-11` **PICK** MRK (composite 59.6, val 43.6 / mom 75.8) entry $123.54 momentum_candidate
+- `2026-07-11` **PICK** MO (composite 68.4, val 64.9 / mom 75.5) entry $71.79 momentum_candidate
+- `2026-07-11` **PICK** CSCO (composite 63.3, val 44.3 / mom 75.5) entry $121.31 momentum_candidate
+- `2026-07-11` **PICK** SPG (composite 57.6, val 39.7 / mom 75.3) entry $218.77 momentum_candidate
+- `2026-07-11` **PICK** GS (composite 67.8, val 64.9 / mom 75.2) entry $1055.18 momentum_candidate
+- `2026-07-11` **PICK** GEV (composite 63.2, val 42.7 / mom 75.2) entry $1091.57 momentum_candidate
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** ACN (composite 59.1, val 75.8 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.3 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** COP (composite 62.5, val 72.8 / mom 59.8) entry $109.04 value_candidate
+- `2026-07-11` **PICK** FDX (composite 64.4, val 72.3 / mom 66.1) entry $314.69 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** T (composite 52.9, val 71.8 / mom 33.8) entry $21.13 value_candidate
+- `2026-07-11` **PICK** WFC (composite 67.5, val 71.6 / mom 60.5) entry $87.16 value_candidate
+- `2026-07-11` **PICK** INTU (composite 59.3, val 70.9 / mom 33.8) entry $274.96 value_candidate
+- `2026-07-11` **PICK** TMUS (composite 56.1, val 70.9 / mom 43.0) entry $187.61 value_candidate
+- `2026-07-11` **PICK** LOW (composite 51.9, val 70.0 / mom 33.8) entry $211.63 value_candidate
+- `2026-07-11` **PICK** CRM (composite 58.0, val 69.4 / mom 33.8) entry $163.32 value_candidate
+- `2026-07-11` **PICK** XOM (composite 61.0, val 69.2 / mom 59.8) entry $138.88 value_candidate
+- `2026-07-11` **PICK** CVX (composite 60.2, val 68.7 / mom 59.3) entry $176.4 value_candidate
+- `2026-07-11` **PICK** DIS (composite 53.2, val 68.2 / mom 33.8) entry $95.62 value_candidate
+- `2026-07-11` **PICK** USB (composite 70.8, val 67.5 / mom 76.2) entry $62.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BKNG (composite 61.5, val 67.3 / mom 45.1) entry $178.39 value_candidate
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ADBE (composite 57.2, val 66.4 / mom 33.8) entry $223.64 value_candidate
+- `2026-07-11` **PICK** MDLZ (composite 62.3, val 66.3 / mom 58.3) entry $58.83 value_candidate
+- `2026-07-11` **PICK** MDT (composite 60.1, val 66.2 / mom 44.6) entry $83.87 value_candidate
+- `2026-07-11` **PICK** JPM (composite 71.9, val 65.8 / mom 76.1) entry $336.47 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** COF (composite 56.3, val 65.6 / mom 44.6) entry $201.52 value_candidate
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** MS (composite 67.5, val 58.3 / mom 76.2) entry $222.28 momentum_candidate
+- `2026-07-11` **PICK** GD (composite 65.1, val 57.2 / mom 76.2) entry $375.06 momentum_candidate
+- `2026-07-11` **PICK** AMD (composite 65.0, val 39.9 / mom 76.2) entry $557.89 momentum_candidate
+- `2026-07-11` **PICK** LLY (composite 64.5, val 38.3 / mom 76.2) entry $1188.58 momentum_candidate
+- `2026-07-11` **PICK** UNH (composite 62.1, val 61.3 / mom 76.2) entry $424.62 momentum_candidate
+- `2026-07-11` **PICK** AAPL (composite 61.5, val 37.5 / mom 76.2) entry $315.32 momentum_candidate
+- `2026-07-11` **PICK** SBUX (composite 60.5, val 55.3 / mom 76.2) entry $106.01 momentum_candidate
+- `2026-07-11` **PICK** UNP (composite 60.1, val 44.6 / mom 76.2) entry $286.96 momentum_candidate
+- `2026-07-11` **PICK** KO (composite 62.6, val 43.0 / mom 76.1) entry $83.49 momentum_candidate
+- `2026-07-11` **PICK** JNJ (composite 60.0, val 42.8 / mom 76.1) entry $256.98 momentum_candidate
+- `2026-07-11` **PICK** LIN (composite 61.2, val 46.3 / mom 76.0) entry $529.79 momentum_candidate
+- `2026-07-11` **PICK** TXN (composite 65.3, val 38.7 / mom 75.8) entry $311.46 momentum_candidate
+- `2026-07-11` **PICK** MRK (composite 59.6, val 43.6 / mom 75.8) entry $123.54 momentum_candidate
+- `2026-07-11` **PICK** MO (composite 68.4, val 64.9 / mom 75.5) entry $71.79 momentum_candidate
+- `2026-07-11` **PICK** CSCO (composite 63.3, val 44.3 / mom 75.5) entry $121.31 momentum_candidate
+- `2026-07-11` **PICK** SPG (composite 57.6, val 39.7 / mom 75.3) entry $218.77 momentum_candidate
+- `2026-07-11` **PICK** GS (composite 67.8, val 64.9 / mom 75.2) entry $1055.18 momentum_candidate
+- `2026-07-11` **PICK** GEV (composite 63.2, val 42.7 / mom 75.2) entry $1091.57 momentum_candidate
+- `2026-07-11` **PICK** CHTR (composite 56.7, val 82.0 / mom 33.8) entry $130.73 value_candidate
+- `2026-07-11` **PICK** FIS (composite 66.7, val 80.6 / mom 42.5) entry $41.98 value_candidate
+- `2026-07-11` **PICK** CTSH (composite 60.9, val 80.4 / mom 33.8) entry $42.57 value_candidate
+- `2026-07-11` **PICK** EG (composite 72.6, val 79.4 / mom 76.0) entry $370.58 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FISV (composite 55.2, val 78.9 / mom 33.8) entry $50.45 value_candidate
+- `2026-07-11` **PICK** AIG (composite 65.9, val 78.8 / mom 59.0) entry $79.17 value_candidate
+- `2026-07-11` **PICK** ALB (composite 65.7, val 78.8 / mom 47.2) entry $126.05 value_candidate
+- `2026-07-11` **PICK** CNC (composite 68.3, val 77.7 / mom 76.2) entry $67.35 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DAL (composite 69.4, val 77.5 / mom 74.8) entry $87.39 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CI (composite 69.6, val 77.4 / mom 72.9) entry $293.46 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CRL (composite 66.8, val 76.0 / mom 76.2) entry $233.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ACN (composite 59.1, val 75.8 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** APA (composite 66.5, val 75.7 / mom 61.4) entry $33.44 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.3 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CCL (composite 55.2, val 74.6 / mom 35.9) entry $26.83 value_candidate
+- `2026-07-11` **PICK** DHI (composite 64.6, val 74.2 / mom 57.4) entry $151.58 value_candidate
+- `2026-07-11` **PICK** FSLR (composite 69.9, val 73.7 / mom 47.7) entry $227.83 value_candidate
+- `2026-07-11` **PICK** ACGL (composite 71.0, val 73.4 / mom 74.9) entry $101.06 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** EOG (composite 71.9, val 73.2 / mom 63.0) entry $134.1 value_candidate
+- `2026-07-11` **PICK** BEN (composite 73.7, val 73.1 / mom 76.2) entry $33.5 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BSX (composite 61.8, val 73.1 / mom 33.8) entry $44.77 value_candidate
+- `2026-07-11` **PICK** COP (composite 62.5, val 72.8 / mom 59.8) entry $109.04 value_candidate
+- `2026-07-11` **PICK** DVA (composite 70.2, val 72.5 / mom 76.2) entry $232.8 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FDX (composite 64.4, val 72.3 / mom 66.1) entry $314.69 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CFG (composite 73.6, val 69.7 / mom 76.2) entry $70.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AFL (composite 72.4, val 68.4 / mom 76.2) entry $121.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AIZ (composite 70.2, val 68.3 / mom 76.2) entry $278.89 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FITB (composite 69.5, val 64.0 / mom 76.2) entry $57.07 momentum_candidate
+- `2026-07-11` **PICK** ALL (composite 68.0, val 62.0 / mom 76.2) entry $251.61 momentum_candidate
+- `2026-07-11` **PICK** DELL (composite 67.0, val 64.3 / mom 76.2) entry $434.97 momentum_candidate
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ELV (composite 66.3, val 70.8 / mom 76.2) entry $416.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ANET (composite 65.2, val 33.9 / mom 76.2) entry $186.96 momentum_candidate
+- `2026-07-11` **PICK** AMD (composite 65.0, val 39.9 / mom 76.2) entry $557.89 momentum_candidate
+- `2026-07-11` **PICK** ABNB (composite 64.8, val 48.0 / mom 76.2) entry $148.62 momentum_candidate
+- `2026-07-11` **PICK** CTVA (composite 64.5, val 58.6 / mom 76.2) entry $85.68 momentum_candidate
+- `2026-07-11` **PICK** EBAY (composite 63.9, val 51.7 / mom 76.2) entry $117.2 momentum_candidate
+- `2026-07-11` **PICK** EA (composite 63.5, val 47.3 / mom 76.2) entry $206.41 momentum_candidate
+- `2026-07-11` **PICK** FFIV (composite 63.5, val 47.5 / mom 76.2) entry $430.39 momentum_candidate
+- `2026-07-11` **PICK** D (composite 63.3, val 58.8 / mom 76.2) entry $70.08 momentum_candidate
+- `2026-07-11` **PICK** EXPD (composite 63.1, val 46.9 / mom 76.2) entry $172.02 momentum_candidate
+- `2026-07-11` **PICK** CSX (composite 62.2, val 48.3 / mom 76.2) entry $49.41 momentum_candidate
+- `2026-07-11` **PICK** AAPL (composite 61.5, val 37.5 / mom 76.2) entry $315.32 momentum_candidate
+- `2026-07-11` **PICK** VTRS (composite 71.7, val 85.4 / mom 75.5) entry $16.27 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CHTR (composite 56.7, val 82.0 / mom 33.8) entry $130.73 value_candidate
+- `2026-07-11` **PICK** KHC (composite 63.9, val 81.8 / mom 58.5) entry $24.85 value_candidate
+- `2026-07-11` **PICK** IVZ (composite 71.7, val 81.0 / mom 76.2) entry $28.98 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FIS (composite 66.7, val 80.6 / mom 42.5) entry $41.98 value_candidate
+- `2026-07-11` **PICK** CTSH (composite 60.9, val 80.4 / mom 33.8) entry $42.57 value_candidate
+- `2026-07-11` **PICK** EG (composite 72.6, val 79.4 / mom 76.0) entry $370.58 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FISV (composite 55.2, val 78.9 / mom 33.8) entry $50.45 value_candidate
+- `2026-07-11` **PICK** AIG (composite 65.9, val 78.8 / mom 59.0) entry $79.17 value_candidate
+- `2026-07-11` **PICK** ALB (composite 65.7, val 78.8 / mom 47.2) entry $126.05 value_candidate
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** PCG (composite 71.1, val 78.4 / mom 72.3) entry $17.17 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PYPL (composite 61.7, val 78.3 / mom 42.5) entry $46.32 value_candidate
+- `2026-07-11` **PICK** UHS (composite 62.1, val 78.2 / mom 42.5) entry $155.57 value_candidate
+- `2026-07-11` **PICK** CNC (composite 68.3, val 77.7 / mom 76.2) entry $67.35 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** SYF (composite 64.7, val 77.6 / mom 36.7) entry $72.44 value_candidate
+- `2026-07-11` **PICK** DAL (composite 69.4, val 77.5 / mom 74.8) entry $87.39 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CI (composite 69.6, val 77.4 / mom 72.9) entry $293.46 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PRU (composite 67.1, val 76.7 / mom 75.2) entry $115.37 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MET (composite 71.4, val 76.4 / mom 76.2) entry $91.65 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CRL (composite 66.8, val 76.0 / mom 76.2) entry $233.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** HIG (composite 70.2, val 75.9 / mom 63.9) entry $138.78 value_candidate
+- `2026-07-11` **PICK** PHM (composite 65.9, val 75.8 / mom 58.6) entry $124.75 value_candidate
+- `2026-07-11` **PICK** ACN (composite 59.1, val 75.8 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** APA (composite 66.5, val 75.7 / mom 61.4) entry $33.44 value_candidate
+- `2026-07-11` **PICK** IP (composite 59.2, val 75.6 / mom 44.7) entry $37.93 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.3 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** SMCI (composite 63.2, val 75.3 / mom 33.9) entry $28.31 value_candidate
+- `2026-07-11` **PICK** LYB (composite 55.4, val 74.7 / mom 46.4) entry $56.35 value_candidate
+- `2026-07-11` **PICK** CCL (composite 55.2, val 74.6 / mom 35.9) entry $26.83 value_candidate
+- `2026-07-11` **PICK** BEN (composite 73.7, val 73.1 / mom 76.2) entry $33.5 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CFG (composite 73.6, val 69.7 / mom 76.2) entry $70.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** KEY (composite 73.4, val 70.2 / mom 76.2) entry $23.3 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** INCY (composite 73.3, val 56.6 / mom 76.2) entry $116.71 momentum_candidate
+- `2026-07-11` **PICK** NTRS (composite 73.2, val 66.9 / mom 76.2) entry $183.55 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MTB (composite 72.7, val 71.6 / mom 76.2) entry $242.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AFL (composite 72.4, val 68.4 / mom 76.2) entry $121.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** RF (composite 72.3, val 69.8 / mom 76.2) entry $31.02 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PNC (composite 71.9, val 67.5 / mom 76.2) entry $251.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PFG (composite 71.7, val 73.7 / mom 76.2) entry $112.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** USB (composite 70.8, val 67.5 / mom 76.2) entry $62.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** GL (composite 70.5, val 73.1 / mom 76.2) entry $179.13 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AIZ (composite 70.2, val 68.3 / mom 76.2) entry $278.89 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DVA (composite 70.2, val 72.5 / mom 76.2) entry $232.8 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TROW (composite 69.9, val 62.4 / mom 76.2) entry $118.55 momentum_candidate
+- `2026-07-11` **PICK** FITB (composite 69.5, val 64.0 / mom 76.2) entry $57.07 momentum_candidate
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** ALL (composite 68.0, val 62.0 / mom 76.2) entry $251.61 momentum_candidate
+- `2026-07-11` **PICK** MS (composite 67.5, val 58.3 / mom 76.2) entry $222.28 momentum_candidate
+- `2026-07-11` **PICK** MPC (composite 67.1, val 66.2 / mom 76.2) entry $283.74 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DELL (composite 67.0, val 64.3 / mom 76.2) entry $434.97 momentum_candidate
+- `2026-07-11` **PICK** PSX (composite 66.5, val 71.8 / mom 76.2) entry $188.36 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ELV (composite 66.3, val 70.8 / mom 76.2) entry $416.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **BUY** C (Medium) Entry 138.50-141.00, stop <136.50, target 147-148, horizon 3-6mo, half size. Q1'26 EPS +56% YoY, rev +14.2% YoY, buybacks -7.5% shares; but ROE only 7.65%/ROA 0.61% (weakest of C/JPM/HIG). FwdPE 11.15x/PEG 0.71. RSI cooled 74.6->54.8, MACD bearish cross narrowing. Q2 earnings wk of 7/13-17, sell-the-news risk flagged. Ranked #3 of 3 in comparative review.
+- `2026-07-11` **BUY** JPM (Medium-High) Entry 330-334, stop <325, target 341-343, horizon medium-long (quality compounder), half-to-full size. Best-in-class profitability ROE 16.47%/ROA 1.27%/net margin 33.9%. FY25 NI -2.4% but Q1'26 reaccelerated rev +9.9%/EPS +17.2% YoY. Richest valuation of the three: P/TBV ~3.2x, PEG 1.74, FwdPE 14.06x. RSI cooled 68->61.7, MACD bearish crossover (pause). Q2 earnings wk of 7/13-17, sell-the-news risk flagged. Ranked #2 of 3 in comparative review.
+- `2026-07-11` **BUY** HIG (Medium-High) Entry 135.50-137.50 pullback or breakout >141.30, stop <133.00, target 144.50 (52wk high), half-to-full size, medium-long horizon. Cheapest+highest-quality of the three: PE 9.77x, PEG 0.12, ROE 22.7%, FCF margin ~19.5%, most conservative leverage (D/E ~23%). Growth decelerating 3yr straight (rev 11.3%->6.4%, EPS 46.5%->28.7%) but still positive. V-shaped recovery off 125.62 low, RSI 63.8 not overbought, near resistance/upper BB 141.07 (extended). News NEUTRAL/mild bullish, thin catalysts, rising options IV = event risk ahead. Ranked #1 of 3 in comparative review (best value+quality combo).
+- `2026-07-11` **PICK** VTRS (composite 71.7, val 85.4 / mom 75.5) entry $16.27 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CHTR (composite 56.7, val 82.0 / mom 33.8) entry $130.73 value_candidate
+- `2026-07-11` **PICK** KHC (composite 63.9, val 81.8 / mom 58.5) entry $24.85 value_candidate
+- `2026-07-11` **PICK** IVZ (composite 71.7, val 81.0 / mom 76.2) entry $28.98 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FIS (composite 66.7, val 80.6 / mom 42.5) entry $41.98 value_candidate
+- `2026-07-11` **PICK** CTSH (composite 60.9, val 80.4 / mom 33.8) entry $42.57 value_candidate
+- `2026-07-11` **PICK** EG (composite 72.6, val 79.4 / mom 76.0) entry $370.58 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FISV (composite 55.2, val 78.9 / mom 33.8) entry $50.45 value_candidate
+- `2026-07-11` **PICK** AIG (composite 65.9, val 78.8 / mom 59.0) entry $79.17 value_candidate
+- `2026-07-11` **PICK** ALB (composite 65.7, val 78.8 / mom 47.2) entry $126.05 value_candidate
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** PCG (composite 71.1, val 78.4 / mom 72.3) entry $17.17 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PYPL (composite 61.7, val 78.3 / mom 42.5) entry $46.32 value_candidate
+- `2026-07-11` **PICK** UHS (composite 62.1, val 78.2 / mom 42.5) entry $155.57 value_candidate
+- `2026-07-11` **PICK** CNC (composite 68.3, val 77.7 / mom 76.2) entry $67.35 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** SYF (composite 64.7, val 77.6 / mom 36.7) entry $72.44 value_candidate
+- `2026-07-11` **PICK** CI (composite 69.6, val 77.4 / mom 72.9) entry $293.46 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DAL (composite 69.1, val 76.8 / mom 74.8) entry $87.39 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PRU (composite 67.1, val 76.7 / mom 75.2) entry $115.37 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MET (composite 71.4, val 76.4 / mom 76.2) entry $91.65 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CRL (composite 66.8, val 76.0 / mom 76.2) entry $233.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ACN (composite 59.1, val 76.0 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** HIG (composite 70.2, val 75.9 / mom 63.9) entry $138.78 value_candidate
+- `2026-07-11` **PICK** PHM (composite 65.9, val 75.8 / mom 58.6) entry $124.75 value_candidate
+- `2026-07-11` **PICK** APA (composite 66.5, val 75.7 / mom 61.4) entry $33.44 value_candidate
+- `2026-07-11` **PICK** IP (composite 59.2, val 75.6 / mom 44.7) entry $37.93 value_candidate
+- `2026-07-11` **PICK** SMCI (composite 63.2, val 75.3 / mom 33.9) entry $28.31 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.2 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** LYB (composite 55.4, val 74.7 / mom 46.4) entry $56.35 value_candidate
+- `2026-07-11` **PICK** CCL (composite 55.2, val 74.6 / mom 35.9) entry $26.83 value_candidate
+- `2026-07-11` **PICK** BEN (composite 73.7, val 73.2 / mom 76.2) entry $33.5 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CFG (composite 73.6, val 69.7 / mom 76.2) entry $70.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** KEY (composite 73.4, val 70.2 / mom 76.2) entry $23.3 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** INCY (composite 73.3, val 56.7 / mom 76.2) entry $116.71 momentum_candidate
+- `2026-07-11` **PICK** NTRS (composite 73.2, val 66.9 / mom 76.2) entry $183.55 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MTB (composite 72.7, val 71.6 / mom 76.2) entry $242.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AFL (composite 72.4, val 68.4 / mom 76.2) entry $121.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** RF (composite 72.3, val 69.8 / mom 76.2) entry $31.02 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PNC (composite 71.9, val 67.5 / mom 76.2) entry $251.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PFG (composite 71.7, val 73.7 / mom 76.2) entry $112.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** USB (composite 70.8, val 67.5 / mom 76.2) entry $62.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** GL (composite 70.5, val 73.1 / mom 76.2) entry $179.13 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AIZ (composite 70.2, val 68.3 / mom 76.2) entry $278.89 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DVA (composite 70.2, val 72.5 / mom 76.2) entry $232.8 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TROW (composite 69.9, val 62.4 / mom 76.2) entry $118.55 momentum_candidate
+- `2026-07-11` **PICK** FITB (composite 69.5, val 64.0 / mom 76.2) entry $57.07 momentum_candidate
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** ALL (composite 68.0, val 62.0 / mom 76.2) entry $251.61 momentum_candidate
+- `2026-07-11` **PICK** MS (composite 67.5, val 58.3 / mom 76.2) entry $222.28 momentum_candidate
+- `2026-07-11` **PICK** MPC (composite 67.1, val 66.2 / mom 76.2) entry $283.74 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DELL (composite 67.0, val 64.3 / mom 76.2) entry $434.97 momentum_candidate
+- `2026-07-11` **PICK** PSX (composite 66.5, val 71.8 / mom 76.2) entry $188.36 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ELV (composite 66.3, val 70.9 / mom 76.2) entry $416.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** VTRS (composite 71.7, val 85.4 / mom 75.5) entry $16.27 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CHTR (composite 56.7, val 82.0 / mom 33.8) entry $130.73 value_candidate
+- `2026-07-11` **PICK** KHC (composite 63.9, val 81.8 / mom 58.5) entry $24.85 value_candidate
+- `2026-07-11` **PICK** IVZ (composite 71.7, val 81.0 / mom 76.2) entry $28.98 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FIS (composite 66.7, val 80.6 / mom 42.5) entry $41.98 value_candidate
+- `2026-07-11` **PICK** CTSH (composite 60.9, val 80.4 / mom 33.8) entry $42.57 value_candidate
+- `2026-07-11` **PICK** EG (composite 72.6, val 79.4 / mom 76.0) entry $370.58 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** FISV (composite 55.2, val 78.9 / mom 33.8) entry $50.45 value_candidate
+- `2026-07-11` **PICK** AIG (composite 65.9, val 78.8 / mom 59.0) entry $79.17 value_candidate
+- `2026-07-11` **PICK** ALB (composite 65.7, val 78.8 / mom 47.2) entry $126.05 value_candidate
+- `2026-07-11` **PICK** PDD (composite 63.0, val 78.8 / mom 33.8) entry $85.13 value_candidate
+- `2026-07-11` **PICK** VZ (composite 59.3, val 78.8 / mom 45.2) entry $42.12 value_candidate
+- `2026-07-11` **PICK** PCG (composite 71.1, val 78.4 / mom 72.3) entry $17.17 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PYPL (composite 61.7, val 78.3 / mom 42.5) entry $46.32 value_candidate
+- `2026-07-11` **PICK** UHS (composite 62.1, val 78.2 / mom 42.5) entry $155.57 value_candidate
+- `2026-07-11` **PICK** CNC (composite 68.3, val 77.7 / mom 76.2) entry $67.35 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** SYF (composite 64.7, val 77.6 / mom 36.7) entry $72.44 value_candidate
+- `2026-07-11` **PICK** CI (composite 69.6, val 77.4 / mom 72.9) entry $293.46 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DAL (composite 69.1, val 76.8 / mom 74.8) entry $87.39 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PRU (composite 67.1, val 76.7 / mom 75.2) entry $115.37 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MET (composite 71.4, val 76.4 / mom 76.2) entry $91.65 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CRL (composite 66.8, val 76.0 / mom 76.2) entry $233.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ACN (composite 59.1, val 76.0 / mom 33.8) entry $135.23 value_candidate
+- `2026-07-11` **PICK** HIG (composite 70.2, val 75.9 / mom 63.9) entry $138.78 value_candidate
+- `2026-07-11` **PICK** PHM (composite 65.9, val 75.8 / mom 58.6) entry $124.75 value_candidate
+- `2026-07-11` **PICK** APA (composite 66.5, val 75.7 / mom 61.4) entry $33.44 value_candidate
+- `2026-07-11` **PICK** IP (composite 59.2, val 75.6 / mom 44.7) entry $37.93 value_candidate
+- `2026-07-11` **PICK** SMCI (composite 63.2, val 75.3 / mom 33.9) entry $28.31 value_candidate
+- `2026-07-11` **PICK** C (composite 74.5, val 75.2 / mom 76.0) entry $140.79 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** LYB (composite 55.4, val 74.7 / mom 46.4) entry $56.35 value_candidate
+- `2026-07-11` **PICK** BEN (composite 73.7, val 73.2 / mom 76.2) entry $33.5 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BAC (composite 73.6, val 73.3 / mom 76.2) entry $59.67 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CFG (composite 73.6, val 69.7 / mom 76.2) entry $70.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** KEY (composite 73.4, val 70.2 / mom 76.2) entry $23.3 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** INCY (composite 73.3, val 56.7 / mom 76.2) entry $116.71 momentum_candidate
+- `2026-07-11` **PICK** NTRS (composite 73.2, val 66.9 / mom 76.2) entry $183.55 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** BNY (composite 73.0, val 65.2 / mom 76.2) entry $151.92 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** MTB (composite 72.7, val 71.6 / mom 76.2) entry $242.34 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AFL (composite 72.4, val 68.4 / mom 76.2) entry $121.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** RF (composite 72.3, val 69.8 / mom 76.2) entry $31.02 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PNC (composite 71.9, val 67.5 / mom 76.2) entry $251.91 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** PFG (composite 71.7, val 73.7 / mom 76.2) entry $112.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** USB (composite 70.8, val 67.5 / mom 76.2) entry $62.41 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** GL (composite 70.5, val 73.1 / mom 76.2) entry $179.13 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** AIZ (composite 70.2, val 68.3 / mom 76.2) entry $278.89 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DVA (composite 70.1, val 72.4 / mom 76.2) entry $232.8 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** TROW (composite 69.9, val 62.4 / mom 76.2) entry $118.55 momentum_candidate
+- `2026-07-11` **PICK** FITB (composite 69.5, val 64.0 / mom 76.2) entry $57.07 momentum_candidate
+- `2026-07-11` **PICK** TRV (composite 68.2, val 65.0 / mom 76.2) entry $338.92 momentum_candidate
+- `2026-07-11` **PICK** ALL (composite 68.0, val 62.0 / mom 76.2) entry $251.61 momentum_candidate
+- `2026-07-11` **PICK** MS (composite 67.5, val 58.3 / mom 76.2) entry $222.28 momentum_candidate
+- `2026-07-11` **PICK** MPC (composite 67.1, val 66.2 / mom 76.2) entry $283.74 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** DELL (composite 67.0, val 64.3 / mom 76.2) entry $434.97 momentum_candidate
+- `2026-07-11` **PICK** PSX (composite 66.5, val 71.8 / mom 76.2) entry $188.36 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** CVS (composite 66.3, val 66.8 / mom 76.2) entry $104.15 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-11` **PICK** ELV (composite 66.3, val 70.9 / mom 76.2) entry $416.23 value_candidate, momentum_candidate, value_and_momentum
+- `2026-07-12` **HOLD** MS (Medium) Fundamental BUY (Q1'26 EPS +31.9% YoY, ROE 16.4%) vs Technical HOLD (bearish MACD cross, weak bounce volume, near 52wk high P/B 3.36x/PEG 2.64) vs News BULLISH-moderate (pre-earnings estimate raises, sector strength, CCC advisory mandate; MS strategists flag broad rally risk). Wait zone $210-216, stop ~$206-207 (50-SMA), target $227-230, catalyst: Q2 earnings ~7/16-18.
+- `2026-07-12` **HOLD** BAC (Medium) 펀더멘털은 이익 가속(FY25 EPS +18.7%, 26년 1분기 EPS +23.3% YoY) 대비 forward P/E 11.66배로 저평가 신호를 보여 BUY 우세. 그러나 기술적으로는 RSI 74→67 냉각, MACD 히스토그램 거의 0으로 수렴, 볼린저 상단 밴드 밀착, 반등 거래량 감소 등 단기 과매수·모멘텀 둔화가 뚜렷해 HOLD. 뉴스/센티먼트는 BofA 자체 6월 소비지출·임금 데이터 호조와 금리 커브 재가팔라이제이션으로 중립~긍정적이나, 7월 14일 실적 발표라는 이진적 촉매가 이틀 앞으로 다가와 확신도를 제한함. 신규 진입은 $57.50~$58.30 눌림목 또는 실적 확인 이후로 미루고, 기존 보유는 $56.80 종가 이탈을 손절선으로 유지. 규제자본비율(CET1) 데이터는 CLI에서 확인 불가.
+- `2026-07-12` **HOLD** BAC (Medium) 밸류에이션(forward P/E 11.66x, PEG 1.06)과 EPS +23.3% YoY 가속으로 펀더멘털은 BUY, BofA Institute 소비·임금 데이터와 은행 섹터 실적 기대감으로 뉴스도 완만한 강세. 다만 기술적으로 볼린저 상단 근접·RSI 과열 후 하락(74.85→66.99)·MACD 데드크로스 초입·거래량 감소로 단기 과열 상태이며, 7/14 실적 발표를 이틀 앞두고 'sell the news' 리스크가 명시적으로 제기됨. 신규 진입은 보류하고 실적 확인 후 재평가 권장. 손절 기준 57.38달러(2×ATR, 6월 지지선), 진입 고려 구간은 57.40~58.30달러.
+- `2026-07-12` **HOLD** BEN (Medium) 펀더멘털: 분기 EPS가 0.15달러에서 0.49달러로 뚜렷이 개선되고 영업이익률도 9.9%에서 15.9%로 회복 중이나, 트레일링 PER 25.6배에 순부채가 1년간 25% 증가하고 잉여현금흐름은 마이너스(-242.1M달러)라 현 주가 수준에서는 부담. 기술적: 50일·200일 이평선 위에서 상승추세는 유지되지만 MACD가 최근 데드크로스를 내고 RSI도 68.66에서 57.66으로 식어 단기 모멘텀 둔화. 뉴스: 6월 AUM이 1.79조달러로 순유입 지속되고 BENJI 토큰화 펀드가 실제 채택되는 등 우호적이나, 여러 매체가 43% 급등 이후 밸류에이션 부담을 지적. 세 관점을 종합하면 상승 스토리는 유효하나 이미 가격에 상당 부분 반영되어 신규 진입보다는 31.70~33.05달러 구간 조정 시 매수가 유리하다고 판단해 HOLD로 결정. 손절선은 31.65달러(50일선/2배 ATR 합류).
+- `2026-07-12` **HOLD** BEN (Medium) 펀더멘털은 분기 EPS가 4분기 연속 가속(0.15→0.49달러)하고 6월 AUM이 1.79조달러로 순유입 지속되어 회복 스토리는 유효하나, TTM 잉여현금흐름이 -242.1M달러로 마이너스이고 총부채가 1년간 17% 증가해 현금창출력 확인이 아직 부족함. 기술적으로는 50일/200일 이평선 위 상승추세 유지, 눌림목 매수(BUY) 신호이나 MACD 데드크로스와 RSI 냉각(68.7→57.66)으로 단기 모멘텀 둔화. 뉴스는 AUM 순유입과 BENJI 토큰화 펀드 채택 등 우호적 재료가 있지만, 이란 관련 지정학 리스크오프에서 BEN이 직접 하락 종목으로 거명됐고 2026년 Fed 금리인상 확률이 일주일 새 58%로 급등(+11%p)해 시장 연동형 자산운용사 밸류에이션에 부담. 세 관점이 엇갈려(기술 BUY, 펀더멘털 HOLD, 뉴스 중립~약세) 확신도를 낮추고 HOLD로 결정. 기존 보유자는 손절선 31.65달러(50일선/2배 ATR) 유지, 신규 진입은 32.50~33.60달러 구간 조정 또는 매크로 리스크 완화·다음 분기 잉여현금흐름 개선 확인 후 재검토 권장.
+- `2026-07-12` **HOLD** CFG (Medium) 펀더멘털과 기술적 분석 모두 HOLD, 뉴스는 완만한 강세(Bullish). 종가 $70.34로 이미 밸류에이션(P/E 16.7x, P/TBV 약 1.9x, ROE 7.7%)과 단기 모멘텀(RSI 과열 해소, MACD 약세 전환, 7/8 대량 분산 매물)이 소진된 구간. Zacks는 Q2 실적 서프라이즈 가능성을 제시하고 수익률곡선 재가팔화가 NIM에 우호적이나, 컨센서스는 이미 EPS 53% 급증($6.44)을 선반영해 실적 미달 시 재조정 리스크 존재. $66-68 구간(50일 이평선/볼린저 하단) 조정 매수 대기, 목표가 $72.5-73.0, 손절 $65.50 미만 종가.
+- `2026-07-12` **BUY** CFG (Medium) 재무·기술·뉴스 3개 관점 모두 긍정적 정렬. Q1 26 EPS 1.13달러(YoY +46.8%) 실적 재가속, NII 5분기 연속 증가, Forward P/E 10.9배(Trailing 16.7배 대비 할인)로 재무는 BUY. 기술적으로는 50/200일 이평선 위 상승추세 유지되나 MACD 약세 전환·RSI 과열 해소 중이라 68.50-69.75달러 지지권 눌림목 매수가 유리(HOLD, 매수 편향). 뉴스는 Zacks의 임박한 실적 서프라이즈 기대와 수익률 곡선 재가팔화(+0.35%)·Fed 동결(2026년 추가 인하 없음 78% 확률)로 완만한 강세. 진입 68.50-70.34달러, 손절 67.90달러(7/8 스윙 저점 하단), 1차 목표 72.50-72.94달러. 리스크: ROE 7.7%/ROA 0.9%로 동종업계 대비 낮은 자본효율성, 실적 발표일 미확정(임박)으로 바이너리 리스크 존재, CET1 등 규제자본비율 데이터 미확보. 포지션은 Half로 분할 진입 권장.
+- `2026-07-12` **BUY** KEY (Medium) 펀더멘털·기술적 분석 모두 BUY 일치(뉴스는 NEUTRAL). 5분기 연속 순이익 성장(+28.6% YoY)과 NII 확대로 이익 개선 뚜렷, forward P/E 10.8배로 밸류에이션 부담 적음. 상승 추세 내 건전한 눌림목(지지 22.49) 확인. 단, MACD 데드크로스, 단기차입금 급증, 예금 경쟁 심화(Truist/Prosperity 다운그레이드) 리스크로 컨빅션은 Medium. 진입 22.50~22.90, 손절 22.34, 목표 23.72.
+- `2026-07-13` **BUY** NTRS (Medium) 재무·뉴스는 강한 매수 정렬, 기술적은 단기 과열로 신중. 5분기 연속 EPS 가속(Q1'26 YoY +42.6%, 매출 +13.7%), 포워드 PER 14.86배 < 트레일링 19.24배로 이익 성장 지속 기대가 밸류에이션을 정당화. 뉴스는 사상 최고가 경신, Zacks Rank #1 모멘텀 선정, TirNua 신규 자산관리 위임, 커브 스티프닝(+0.35)으로 BULLISH. 다만 기술적으로는 종가가 볼린저 상단(183.47) 이탈, RSI 67.8로 과매수 근접, 브레이크아웃 주간 거래량이 20일 평균(~101만주) 대비 낮은 72~95만주에 그쳐 추격매수 위험을 지적(HOLD). Q1'26 영업/잉여현금흐름이 각각 -3.2억/-5.4억 달러로 마이너스 전환한 점도 다음 분기 확인이 필요한 워치 아이템. 진입은 178~181달러 눌림목에서 절반 규모로 시작, 손절 176.50달러 미만 종가, 1차 목표 190달러, 투자기간 3~6개월.
+- `2026-07-25` **BUY** KEY (Medium) 3개 렌즈 정렬도가 가장 높은 종목. 펀더멘털 BUY: 2026Q1 NII $1,222M(YoY +11.5%), 순이익 $522M(YoY +28.9%), 효율성비율 63.3%→60.0%로 4분기 연속 개선, 2024년 -$161M 적자에서 2025년 $1,829M로 완전 회복. 밸류에이션 PER 13.25배/포워드 10.57배, P/B 1.40배, P/TBV 약 1.67배, 배당수익률 3.61%. 뉴스 BULLISH(확신 중~상): 7/21 Q2 실적에서 조정 EPS $0.44로 컨센서스 +4.76% 상회, 대손충당금 감소, 경영진이 상업대출·NII·수수료 모멘텀 근거로 2026 연간 가이던스 일부 상향, 7/24 IBD가 52주 신고가 종목으로 거명. 기술 HOLD(중립): 종가 $22.65로 50일선 $22.33·200일선 $20.41 위 상승추세 유지하나 7/17 고점 $24.07 이후 5거래일 조정, MACD 데드크로스(0.140 vs 시그널 0.276), RSI 45.75로 냉각, 볼린저 하단 $22.55 근접. 조정 거래량이 7/21 18.0M→7/24 6.8M로 급감해 매도 압력 소진 신호. 실적 서프라이즈 직후 눌림목이라는 점이 핵심 매력. 진입 $22.30~22.70(50일선·볼린저 하단 합류), 손절 종가 $21.90 하회, 1차 목표 $24.07, 2차 $25.00, 기간 3~6개월, 포지션 Half. 리스크: 2026Q1 단기차입금이 $1,071M→$6,149M로 5.7배 급증하고 영업현금흐름이 -$62M로 적자 전환한 상태에서 배당·자사주 $648M 집행, 배당성향 62.5%로 다소 높음, 예금 성장이 실적 콜에서 과제로 지적됨. CET1·CRE 익스포저·충당금·예금 잔액은 CLI 데이터 미제공으로 미검증. 2026-07-12 BUY(진입 22.50~22.90, 목표 23.72) 기록의 후속 — 목표가는 7/17 $24.07로 달성됐고 이번은 눌림목 재진입 판단. C와의 비교에서 확신도 1위.
+- `2026-07-25` **HOLD** C (Medium) 펀더멘털·뉴스는 긍정이나 차트가 이를 확인해주지 못해 HOLD. 펀더멘털 BUY(중): 2026Q1 지속영업 순이익 $5,786M로 YoY +42.3%, NII $15.74B로 5개 분기 최고, FY25 매출 +5.6%·희석EPS +17.7%($5.94→$6.99), FY25 자사주매입 -$18.25B로 전년 대비 +142.6% 확대되며 TBVPS $88.94→$98.57(+10.8%). 밸류에이션 PER 14.24배/포워드 10.32배, PEG 0.72, P/B 1.15배, P/TBV 약 1.34배, 배당수익률 2.03%. 뉴스 BULLISH(중): Zacks가 Q2 실적 호조와 2026 전망 상향을 근거로 JPM·GS와 함께 매수 추천, 금융위기 이후 최대 규모 $817M 멀티패밀리 CMBS 딜 프라이싱, 마스터카드 VCN 플랫폼 글로벌 최초 발급사 선정. 기술 HOLD(중): 종가 $132.19로 50일선 $134.29 아래(200일선 $117.26 위), 6/18 고점 $147.96 대비 -10.6%. 7/14 실적일에 거래량 32.1M(평소 3배)을 동반한 급락 후 7/17 $127.08까지 하락, RSI 43.64, MACD -1.541로 시그널 -0.579 아래. 핵심 갈등: 뉴스는 Q2 호실적이라 하는데 시장은 대량 거래를 동반해 10% 급락시켰다 — 시장이 헤드라인과 다르게 반응했으므로 저평가 논리만으로 진입하기엔 확인이 부족. 신규 진입은 종가 $134.29(50일선) 회복 확인 후, 또는 $127~128 지지 재확인 후로 유보. 손절 $126.75(1.5×ATR 3.61) 또는 스윙 저점 $127.08 이탈, 회복 시 목표 $140.71→$147.96. 리스크: 2~5월 CFO Mason 포함 다수 임원 매도가 이어지고 공개시장 매수는 전무, ROE 8.53%·ROA 0.66%로 자본효율성이 동종 대형은행 대비 낮음, CET1·NIM·공식 효율성비율·대손비용은 CLI 미제공으로 미검증. 2026-07-11 BUY(진입 138.50~141.00, 손절 136.50) 기록의 후속 — 당시 명시한 sell-the-news 리스크가 7/14에 현실화되며 손절선이 이탈됐고, 이번에 HOLD로 하향. KEY 대비 확신도 2위.
