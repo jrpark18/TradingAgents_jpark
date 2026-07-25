@@ -198,6 +198,9 @@
   .datechip{color:var(--muted); font-size:11.5px;}
   .golink{font-size:11.5px; color:var(--accent); font-weight:650; background:none; border:none; padding:0; cursor:pointer;}
   .golink:hover{text-decoration:underline;}
+  .chartlink{font-size:11.5px; color:var(--muted); font-weight:650; text-decoration:none;
+             display:inline-flex; align-items:center; gap:3px; white-space:nowrap;}
+  .chartlink:hover{color:var(--accent); text-decoration:underline;}
 
   /* ---- compare selection bar (floating) ---- */
   .comparebar{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:60;
@@ -625,6 +628,27 @@ window.__DASHBOARD__ = /*__DATA__*/ null;
     });
   });
 
+  // ---- external chart link ----
+  // The scan payload carries snapshot metrics only (no OHLC series), so charts
+  // are delegated to an external provider rather than drawn here — that also
+  // keeps this file self-contained/offline-openable. Swap CHART_PROVIDER to
+  // change where "차트 보기" goes; {t} is the ticker.
+  const CHART_PROVIDERS = {
+    tradingview: {label:'TradingView', url:'https://www.tradingview.com/symbols/{t}/'},
+    finviz:      {label:'Finviz',      url:'https://finviz.com/quote.ashx?t={t}&p=d'},
+    yahoo:       {label:'Yahoo',       url:'https://finance.yahoo.com/chart/{t}'},
+  };
+  const CHART_PROVIDER = 'tradingview';
+  function chartLinkHTML(ticker){
+    const p = CHART_PROVIDERS[CHART_PROVIDER];
+    const url = p.url.replace('{t}', encodeURIComponent(ticker));
+    return `<a class="chartlink" href="${esc(url)}" target="_blank" rel="noopener noreferrer" `+
+           `title="${esc(ticker)} 차트를 ${esc(p.label)}에서 열기 (새 탭)">`+
+           `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" `+
+           `stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/>`+
+           `<polyline points="15 7 21 7 21 13"/></svg>차트 보기</a>`;
+  }
+
   // ---- accordion stock rows ----
   function renderRows(nodeId, rows){
     const node = $(nodeId);
@@ -640,12 +664,13 @@ window.__DASHBOARD__ = /*__DATA__*/ null;
       const factorHTML = `<div class="factorgrid">`+factors.map(([lab,v])=>
         `<div class="f"><div class="lab">${lab}<b>${Math.round(v)}</b></div><div class="mt"><div class="mtf" style="width:${Math.max(2,v)}%;background:${colorFor(v)}"></div></div></div>`
       ).join('')+`</div>`;
+      const chart = chartLinkHTML(e.ticker);
       const sessIdx = sessions.findIndex(s=>s.status==='done' && (s.tickers||[]).includes(e.ticker));
       const golink = sessIdx>=0 ? `<button class="golink" data-goto-session="${sessIdx}">전체 리포트 보기 →</button>` : '';
       const noteBlock = entry
         ? `<p class="note">${esc(entry.note||'')}</p><div class="runrow"><span class="datechip mono">${esc(entry.date||'')} 기록</span>`+
-          `<button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled'}>다시 분석</button><span class="runstatus" data-job="${esc(e.ticker)}"></span></div>${golink}`
-        : `${flagChips(e)}<div class="runrow"><button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled title="라이브 서버(--serve)에서만 가능"'}>분석 실행</button><span class="runstatus" data-job="${esc(e.ticker)}"></span></div>`;
+          `<button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled'}>다시 분석</button>${chart}<span class="runstatus" data-job="${esc(e.ticker)}"></span></div>${golink}`
+        : `${flagChips(e)}<div class="runrow"><button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled title="라이브 서버(--serve)에서만 가능"'}>분석 실행</button>${chart}<span class="runstatus" data-job="${esc(e.ticker)}"></span></div>`;
       return `<div class="stockrow" data-idx="${i}">`+
         `<div class="stockrow-main" role="button" tabindex="0" aria-expanded="false">`+
           `<input type="checkbox" class="rowcheck" data-ticker="${esc(e.ticker)}" aria-label="${esc(e.ticker)} 비교 선택" ${selectedTickers.has(e.ticker)?'checked':''}>`+
