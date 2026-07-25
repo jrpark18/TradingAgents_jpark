@@ -1,7 +1,7 @@
-# Dow Jones Industrial Average (30). "dow100" in the request → the real DJIA.
-# Refresh with: python scripts/refresh_universe.py
+# dow30 constituents — refreshed by scripts/refresh_universe.py
 AAPL
 AMGN
+AMZN
 AXP
 BA
 CAT
@@ -9,6 +9,7 @@ CRM
 CSCO
 CVX
 DIS
+GOOGL
 GS
 HD
 HON
@@ -27,6 +28,4 @@ SHW
 TRV
 UNH
 V
-VZ
 WMT
-AMZN
