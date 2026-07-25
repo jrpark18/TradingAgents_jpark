@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Requirements — Market Dashboard</title>
+<style>
+  /* =========================================================================
+     DESIGN TOKENS
+     Source: dataviz skill reference palette (references/palette.md), reconciled
+     against the tokens already shipping in scripts/dashboard_template.html.
+
+     FIX vs. current dashboard_template.html: the status roles (good/warning/
+     serious/critical) were split into different light vs. dark hex values there.
+     The reference palette specifies these as "fixed — never themed": the SAME
+     four hex steps are used on both surfaces (validated to clear 3:1 on dark;
+     warning/serious sit sub-3:1 on light by design, mitigated by the icon+label
+     rule below, never color alone). This file uses the corrected, single-value
+     status tokens. Everything else (surfaces, ink, categorical hues) matches
+     the existing dashboard unchanged.
+     ========================================================================= */
+  :root{
+    --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f2ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,.10); --track:#eae9e2;
+    --accent:#2a78d6; --aqua:#1baf7a; --violet:#4a3aa7;
+    /* status — fixed, identical on both surfaces (palette.md) */
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(11,11,11,.05),0 8px 24px rgba(11,11,11,.06);
+  }
+  :root[data-theme="dark"]{
+    --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+    --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+    --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+      --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+      --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--plane); color:var(--ink);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+    padding:clamp(16px,3vw,40px);
+  }
+  .mono{font-family:var(--mono); font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1040px; margin:0 auto; display:flex; flex-direction:column; gap:34px;}
+
+  /* ---- doc chrome ---- */
+  .dochead{display:flex; align-items:baseline; justify-content:space-between; gap:14px;
+    padding-bottom:16px; border-bottom:1px solid var(--grid); flex-wrap:wrap;}
+  .dochead h1{margin:0; font-size:19px; font-weight:650; letter-spacing:-.01em;}
+  .dochead .doc-subtitle{color:var(--muted); font-size:12.5px; margin-top:3px;}
+  .toggle{font:inherit; font-size:12px; color:var(--ink-2); cursor:pointer;
+    background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:5px 10px;}
+  .toggle:hover{color:var(--ink); border-color:var(--muted);}
+
+  section.doc{display:flex; flex-direction:column; gap:12px;}
+  section.doc > h2{font-size:15px; font-weight:650; margin:0; display:flex; align-items:center; gap:8px;}
+  section.doc > h2 .n{font-family:var(--mono); font-size:11px; color:var(--muted); font-weight:500;}
+  section.doc > p.note{margin:0; font-size:12.5px; color:var(--ink-2); max-width:72ch;}
+  .stage{background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px 20px;}
+  .stage.grid{display:grid; gap:14px;}
+  code.snip{display:block; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:8px; padding:10px 12px; font-family:var(--mono); font-size:11.5px;
+    color:var(--ink-2); white-space:pre; overflow-x:auto; margin-top:8px;}
+  .flagline{display:flex; gap:6px; align-items:center; font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .flagline .ok{color:var(--good);} .flagline .warn{color:var(--warning);}
+
+  /* ---- token swatches ---- */
+  .swrow{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;}
+  .sw{border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface);}
+  .sw .fill{height:44px;}
+  .sw .lab{padding:7px 9px; display:flex; flex-direction:column; gap:1px;}
+  .sw .lab b{font-size:11.5px;}
+  .sw .lab span{font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+
+  /* =========================================================================
+     EXISTING COMPONENTS (unchanged specs, reproduced here for reference)
+     ========================================================================= */
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:13px 15px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:3px; min-width:150px;}
+  .tile .k{font-size:11.5px; color:var(--muted); letter-spacing:.03em; text-transform:uppercase;}
+  .tile .v{font-family:var(--mono); font-size:26px; font-weight:640; letter-spacing:-.02em;}
+  .tile .cap{font-size:11.5px; color:var(--ink-2);}
+  .tile.accent .v{color:var(--accent);} .tile.aqua .v{color:var(--aqua);}
+  .tile.violet .v{color:var(--violet);} .tile.good .v{color:var(--good);}
+  .tile.crit .v{color:var(--critical);}
+  .tilerow{display:flex; gap:10px; flex-wrap:wrap;}
+
+  .barlist{display:flex; flex-direction:column; gap:8px;}
+  .barrow{display:grid; grid-template-columns:96px 1fr 34px; align-items:center; gap:10px;}
+  .barrow .lab{font-size:12px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .barrow .val{font-family:var(--mono); font-size:12px; color:var(--ink-2); text-align:right;}
+  .track{height:9px; background:var(--track); border-radius:999px; overflow:hidden;}
+  .fill{height:100%; border-radius:999px; background:var(--accent); min-width:3px;}
+
+  table.demo{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.demo thead th{font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);
+    text-align:left; font-weight:600; padding:8px 12px;}
+  table.demo thead th.num, table.demo td.num{text-align:right;}
+  table.demo tbody td{padding:9px 12px; border-top:1px solid var(--grid); vertical-align:middle;}
+  table.demo tbody tr:hover{background:var(--surface-2);}
+  .tkr{font-family:var(--mono); font-weight:640; font-size:13px; letter-spacing:.01em;}
+  .sub{display:inline-grid; grid-template-columns:14px 40px; align-items:center; gap:5px;}
+  .sub .n{font-family:var(--mono); font-size:11px; color:var(--ink-2); text-align:right;}
+  .microtrack{height:6px; width:40px; background:var(--track); border-radius:999px; overflow:hidden;}
+  .microfill{height:100%; background:var(--accent); border-radius:999px;}
+  .flag{font-size:10.5px; color:var(--ink-2); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:1px 6px; white-space:nowrap;}
+  .flag.good{color:var(--good); border-color:color-mix(in srgb,var(--good) 35%,transparent);}
+  .flag.crit{color:var(--critical); border-color:color-mix(in srgb,var(--critical) 40%,transparent); font-weight:600;}
+
+  /* =========================================================================
+     NEW COMPONENT — Decision badge (BUY / HOLD / SELL × conviction)
+     Rule: decision maps to a STATUS hue (good=BUY, critical=SELL). HOLD is
+     genuinely neutral, so it does NOT invent a 5th status hue — it uses a text/
+     muted token, same as a categorical "de-emphasis" slot. Conviction (Low/
+     Medium/High) is layered as a SECOND, non-hue channel (filled-dot meter, same
+     rule as the meter component: "fill carries severity, unfilled track is a
+     lighter step of the same ramp") — never a different color per conviction
+     level, so a colorblind reader never has to distinguish hue A from hue B to
+     read confidence. Status color never carries meaning alone: icon + label always.
+     ========================================================================= */
+  .badge{display:inline-flex; align-items:center; gap:7px; padding:4px 10px 4px 8px;
+    border-radius:999px; font-size:12px; font-weight:640; letter-spacing:.01em;
+    border:1px solid transparent; white-space:nowrap;}
+  .badge .ic{font-size:12px; line-height:1;}
+  .badge .lab{}
+  .badge .conv{display:inline-flex; gap:2px; margin-left:2px;}
+  .badge .conv i{width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.25;}
+  .badge .conv i.on{opacity:1;}
+  .badge.buy{color:var(--good); background:color-mix(in srgb,var(--good) 12%,transparent);
+    border-color:color-mix(in srgb,var(--good) 30%,transparent);}
+  .badge.sell{color:var(--critical); background:color-mix(in srgb,var(--critical) 12%,transparent);
+    border-color:color-mix(in srgb,var(--critical) 30%,transparent);}
+  .badge.hold{color:var(--ink-2); background:var(--surface-2); border-color:var(--border);}
+  .badgerow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+
+  /* =========================================================================
+     NEW COMPONENT — Tabs (스캔 / 결과 / History / 로그)
+     Standard UI, not a chart: underline-indicator pattern, active state reuses
+     --accent (same role as the accent used for the primary categorical series
+     and the "sweet spot" stripe elsewhere in the dashboard), inactive tabs stay
+     on text tokens so color still marks state, never decoration.
+     ========================================================================= */
+  .tabs{display:flex; gap:2px; border-bottom:1px solid var(--grid);}
+  .tab{font:inherit; font-size:13px; font-weight:600; color:var(--muted); background:none; border:none;
+    padding:9px 14px; cursor:pointer; position:relative; top:1px;}
+  .tab:hover{color:var(--ink-2);}
+  .tab.active{color:var(--ink);}
+  .tab.active::after{content:""; position:absolute; left:10px; right:10px; bottom:-1px; height:2px;
+    background:var(--accent); border-radius:2px 2px 0 0;}
+  .tab .cnt{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:5px;}
+  .tab.active .cnt{color:var(--accent);}
+
+  /* =========================================================================
+     NEW COMPONENT — History list item (결과 탭 우측 패널)
+     A compact row, not a table: identity (ticker/type) + status (badge) +
+     relative time (muted, mono). Selected state = left accent rule, same
+     mechanism as the existing table.sweet/value/up header stripes — a colored
+     bar, never a background wash that would fight the badge colors.
+     ========================================================================= */
+  .hist-list{display:flex; flex-direction:column;}
+  .hist-item{display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer;
+    border-left:3px solid transparent; border-bottom:1px solid var(--grid);}
+  .hist-item:hover{background:var(--surface-2);}
+  .hist-item.sel{border-left-color:var(--accent); background:var(--surface-2);}
+  .hist-item .who{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .hist-item .tkrs{font-family:var(--mono); font-weight:640; font-size:12.5px;}
+  .hist-item .meta{font-size:11px; color:var(--muted);}
+  .hist-item .time{font-family:var(--mono); font-size:10.5px; color:var(--muted); white-space:nowrap;}
+
+  /* =========================================================================
+     NEW COMPONENT — Log / transcript timeline (로그 탭)
+     A vertical rail (hairline, --grid) with event dots. Dot color is a STATE
+     read (tool call vs. text vs. error), reusing status/accent tokens rather
+     than inventing new hues — accent=tool call, muted=reasoning/text,
+     critical=error. Every dot ships with a label; the rail is decorative only.
+     ========================================================================= */
+  .tl{position:relative; padding-left:22px;}
+  .tl::before{content:""; position:absolute; left:5px; top:4px; bottom:4px; width:1px; background:var(--grid);}
+  .tlrow{position:relative; padding:0 0 16px 12px;}
+  .tlrow:last-child{padding-bottom:0;}
+  .tlrow::before{content:""; position:absolute; left:-22px; top:3px; width:8px; height:8px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--surface);}
+  .tlrow.text::before{background:var(--muted);}
+  .tlrow.error::before{background:var(--critical);}
+  .tlrow .head{display:flex; align-items:baseline; gap:8px; font-size:12px;}
+  .tlrow .kind{font-weight:650;}
+  .tlrow .ts{font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+  .tlrow .body{margin-top:3px; font-size:12px; color:var(--ink-2);}
+  .tlrow .body code{font-family:var(--mono); font-size:11px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:1px 5px;}
+
+  .cols2{display:grid; grid-template-columns:1fr 260px; gap:14px; align-items:start;}
+  @media (max-width:720px){.cols2{grid-template-columns:1fr;}}
+  .foot{color:var(--muted); font-size:11.5px; text-align:center; padding:10px 0 2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="dochead">
+    <div>
+      <h1>Design Requirements — Market Dashboard</h1>
+      <div class="doc-subtitle">토큰 정의 + 컴포넌트 스펙 · dataviz 스킬 레퍼런스 팔레트 기준 · v1 (2026-07-12)</div>
+    </div>
+    <button class="toggle" id="themebtn" type="button">◐ 테마</button>
+  </div>
+
+  <!-- ================= TOKENS ================= -->
+  <section class="doc">
+    <h2>1. 색상 토큰 <span class="n">--good / --warning / --serious / --critical 등</span></h2>
+    <p class="note">
+      기존 <code>dashboard_template.html</code>의 팔레트를 그대로 쓰되, status 4종(good/warning/serious/
+      critical)은 라이트·다크에서 <b>같은 헥스값</b>으로 고정했다 — dataviz 레퍼런스의 규칙("fixed — never
+      themed")이며, 밸리데이터로 4색 상호 대비(CVD ΔE 최솟값 16.4, 목표 12 통과)와 다크 서피스 대비(전부
+      ≥3:1)를 확인함. warning·serious는 라이트 서피스에서 3:1 미만이라 <b>아이콘+레이블 병기가 필수</b>이며
+      배지 컴포넌트에서 실제로 그렇게 쓴다.
+    </p>
+    <div class="stage">
+      <div class="swrow" id="sw-status"></div>
+      <div class="flagline"><span class="ok">✓</span> CVD 분리 통과 (ΔE 16.4 ≥ 12) · <span class="warn">⚠</span> warning/serious 라이트 대비 &lt;3:1 → 색만으로 의미 전달 금지, 항상 아이콘+텍스트 병기</div>
+    </div>
+    <div class="stage">
+      <div class="swrow" id="sw-core"></div>
+    </div>
+  </section>
+
+  <!-- ================= TYPOGRAPHY ================= -->
+  <section class="doc">
+    <h2>2. 타이포그래피</h2>
+    <p class="note">시스템 산세리프 고정(<code>system-ui, -apple-system, "Segoe UI", sans-serif</code>) — 디스플레이/세리프 서체 없음. 큰 단독 숫자(타일 값)는 비례폭 숫자, 테이블/축처럼 정렬이 필요한 컬럼만 <code>tabular-nums</code>.</p>
+    <div class="stage" style="display:flex; flex-direction:column; gap:10px;">
+      <div style="font-size:26px; font-weight:640; letter-spacing:-.02em;" class="mono">128.4 <span style="font-family:system-ui; font-size:11px; color:var(--muted); font-weight:500;">— 타일 값 (mono, 26px/640)</span></div>
+      <div style="font-size:15px; font-weight:650;">섹션 헤더 15px/650</div>
+      <div style="font-size:13.5px; font-weight:640;">패널/테이블 헤더 13.5px/640</div>
+      <div style="font-size:12.5px; color:var(--ink-2);">본문/캡션 12.5px, --ink-2</div>
+      <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;">라벨 11px, --muted, uppercase</div>
+    </div>
+  </section>
+
+  <!-- ================= EXISTING: KPI TILES ================= -->
+  <section class="doc">
+    <h2>3. KPI 타일 <span class="n">기존 컴포넌트</span></h2>
+    <p class="note">label · value(mono, 26px) · caption. 색은 역할별 accent 클래스로만(accent/aqua/violet/good/crit) — 임의 배색 금지.</p>
+    <div class="stage tilerow">
+      <div class="tile"><span class="k">유니버스</span><span class="v">503</span><span class="cap">S&amp;P 500</span></div>
+      <div class="tile accent"><span class="k">SWEET SPOT</span><span class="v">12</span><span class="cap">저평가 &amp; 상승</span></div>
+      <div class="tile good"><span class="k">적중률</span><span class="v">64%</span><span class="cap">리뷰 22건</span></div>
+      <div class="tile crit"><span class="k">밸류트랩 경고</span><span class="v">3</span><span class="cap">적자기업 후보</span></div>
+    </div>
+  </section>
+
+  <!-- ================= EXISTING: BAR LIST / TABLE ================= -->
+  <section class="doc">
+    <h2>4. 바 리스트 · 랭킹 테이블 <span class="n">기존 컴포넌트</span></h2>
+    <p class="note">단일 계열이라 범례 불필요(제목이 곧 범례). 막대는 accent 1색, 트랙은 --track. 테이블의 서브 지표(V/M/Q/G)는 마이크로트랙 + 값 — 개별 라벨 없이 헤더가 담당.</p>
+    <div class="stage grid" style="grid-template-columns:1fr 1fr;">
+      <div class="barlist" id="demo-bars"></div>
+      <div class="scroll"><table class="demo" id="demo-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= NEW: DECISION BADGE ================= -->
+  <section class="doc">
+    <h2>5. 결정 배지 (신규) <span class="n">BUY / HOLD / SELL × 확신도</span></h2>
+    <p class="note">
+      결정(BUY/SELL)만 status hue(good/critical) 사용. <b>HOLD는 5번째 상태색을 새로 만들지 않고</b> 중립
+      텍스트 토큰(--ink-2)으로 표현 — "상태색은 재사용 금지, 중립은 색이 아니라 무채색" 원칙. 확신도는
+      색을 바꾸지 않고 <b>동일 색상의 채움 점(dot meter)</b>으로 표현(미터 컴포넌트와 동일 규칙: 채움이
+      심각도를 나타내고 트랙은 같은 램프의 옅은 단계). 아이콘+레이블은 항상 함께 — 색만으로 의미 전달 금지.
+    </p>
+    <div class="stage">
+      <div class="badgerow" id="demo-badges"></div>
+      <code class="snip">&lt;span class="badge buy"&gt;
+  &lt;span class="ic"&gt;▲&lt;/span&gt;&lt;span class="lab"&gt;BUY&lt;/span&gt;
+  &lt;span class="conv" title="확신도: Medium-High"&gt;&lt;i class="on"&gt;&lt;/i&gt;&lt;i class="on"&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;/span&gt;
+&lt;/span&gt;</code>
+    </div>
+  </section>
+
+  <!-- ================= NEW: TABS ================= -->
+  <section class="doc">
+    <h2>6. 탭 (신규) <span class="n">스캔 / 결과 / History / 로그</span></h2>
+    <p class="note">언더라인 인디케이터, 활성 색은 --accent 1가지만(다른 의미 부여 금지). 카운트는 mono 보조 텍스트.</p>
+    <div class="stage" style="padding:0 20px;">
+      <div class="tabs" id="demo-tabs"></div>
+    </div>
+  </section>
+
+  <!-- ================= NEW: HISTORY LIST + RESULT PANEL LAYOUT ================= -->
+  <section class="doc">
+    <h2>7. 결과 탭 레이아웃 (신규) <span class="n">리포트 + History 패널</span></h2>
+    <p class="note">본문(리포트) + 우측 고정폭 History 리스트. 선택된 세션은 좌측 accent 룰(3px)로 표시 — 배경 워시가 아니라 룰 하나로, 배지 색과 충돌하지 않게.</p>
+    <div class="stage cols2">
+      <div>
+        <div class="tile" style="max-width:none;">
+          <span class="k">선택된 세션 리포트</span>
+          <span class="cap" style="margin-top:6px; line-height:1.6;">
+            결과 탭은 선택한 세션의 마크다운 리포트 전문을 렌더링하는 영역이다.
+            좌측 본문 폭은 가독성을 위해 72ch 내외로 제한한다.
+          </span>
+        </div>
+      </div>
+      <div class="table" style="border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <div class="hist-list" id="demo-history"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NEW: LOG TIMELINE ================= -->
+  <section class="doc">
+    <h2>8. 로그 / 트랜스크립트 타임라인 (신규) <span class="n">로그 탭</span></h2>
+    <p class="note">세로 레일(hairline) + 이벤트 점. 점 색은 종류 구분용 상태값(accent=도구 호출, muted=텍스트, critical=오류)이며 항상 라벨과 함께.</p>
+    <div class="stage">
+      <div class="tl" id="demo-timeline"></div>
+    </div>
+  </section>
+
+  <div class="foot">이 문서는 실제 렌더링된 컴포넌트로 구성된 스타일 가이드입니다 · 코드는 그대로 복사해 재사용 가능</div>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+
+  // theme toggle
+  const btn = $('#themebtn');
+  const cur = () => document.documentElement.getAttribute('data-theme')
+     || (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  btn.onclick = ()=>document.documentElement.setAttribute('data-theme', cur()==='dark'?'light':'dark');
+
+  // ---- token swatches ----
+  const status = [
+    ['--good','BUY / 적중 / 알파+', '#0ca30c'],
+    ['--warning','주의(참고용, 배지엔 미사용)', '#fab219'],
+    ['--serious','경계(참고용, 배지엔 미사용)', '#ec835a'],
+    ['--critical','SELL / 밸류트랩 / 오류', '#d03b3b'],
+  ];
+  $('#sw-status').innerHTML = status.map(([name,role,hex])=>
+    `<div class="sw"><div class="fill" style="background:${hex}"></div>` +
+    `<div class="lab"><b>${name}</b><span>${hex} · ${role}</span></div></div>`).join('');
+
+  const core = [
+    ['--accent','주 계열 / 탭 활성 / SWEET SPOT'],
+    ['--aqua','저평가 계열'],
+    ['--violet','상승 계열'],
+    ['--ink','본문 텍스트'],
+    ['--ink-2','보조 텍스트 / HOLD 배지'],
+    ['--muted','라벨 / 타임스탬프'],
+    ['--surface','카드/패널 배경'],
+    ['--surface-2','호버 / 대체 배경'],
+  ];
+  function tokVal(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  $('#sw-core').innerHTML = core.map(([name,role])=>
+    `<div class="sw"><div class="fill" style="background:var(${name})"></div>` +
+    `<div class="lab"><b>${name}</b><span>${role}</span></div></div>`).join('');
+
+  // ---- bar list demo ----
+  const bars = [['Financials',9],['Technology',7],['Healthcare',5],['Energy',3]];
+  const max = Math.max(...bars.map(b=>b[1]));
+  $('#demo-bars').innerHTML = bars.map(([lab,v])=>
+    `<div class="barrow"><span class="lab">${lab}</span>` +
+    `<span class="track"><span class="fill" style="width:${v/max*100}%"></span></span>` +
+    `<span class="val">${v}</span></div>`).join('');
+
+  // ---- table demo ----
+  const rows = [
+    {t:'HIG', comp:78, v:82, m:65, q:88, g:70, sect:'Financials'},
+    {t:'JPM', comp:71, v:58, m:74, q:85, g:66, sect:'Financials'},
+    {t:'C',   comp:69, v:75, m:60, q:52, g:80, sect:'Financials'},
+  ];
+  const sub = v => `<span class="sub"><span class="microtrack"><span class="microfill" style="width:${v}%"></span></span><span class="n">${v}</span></span>`;
+  $('#demo-table').innerHTML =
+    `<thead><tr><th>티커</th><th class="num">종합</th><th>V</th><th>M</th><th>Q</th><th>G</th><th>섹터</th></tr></thead><tbody>` +
+    rows.map(r=>`<tr><td><span class="tkr">${r.t}</span></td><td class="num mono">${r.comp}</td>` +
+      `<td class="num">${sub(r.v)}</td><td class="num">${sub(r.m)}</td><td class="num">${sub(r.q)}</td><td class="num">${sub(r.g)}</td>` +
+      `<td><span class="flag">${r.sect}</span></td></tr>`).join('') + `</tbody>`;
+
+  // ---- badges demo ----
+  function badge(decision, conv){
+    const map = {buy:['▲','BUY'], sell:['▼','SELL'], hold:['●','HOLD']};
+    const [ic,lab] = map[decision];
+    const levels = {Low:1, Medium:2, 'Medium-High':2, High:3};
+    const n = levels[conv] ?? 2;
+    const dots = [0,1,2].map(i=>`<i class="${i<n?'on':''}"></i>`).join('');
+    return `<span class="badge ${decision}"><span class="ic">${ic}</span><span class="lab">${lab}</span>`+
+      `<span class="conv" title="확신도: ${conv}">${dots}</span></span>`;
+  }
+  $('#demo-badges').innerHTML =
+    badge('buy','Medium-High') + badge('buy','Medium') + badge('hold','Medium') + badge('sell','Low');
+
+  // ---- tabs demo ----
+  const tabs = [['스캔',null],['결과',3],['History',22],['로그',null]];
+  $('#demo-tabs').innerHTML = tabs.map(([lab,cnt],i)=>
+    `<button class="tab ${i===1?'active':''}">${lab}${cnt!=null?`<span class="cnt">${cnt}</span>`:''}</button>`).join('');
+
+  // ---- history list demo ----
+  const hist = [
+    {tkrs:'C · JPM · HIG', meta:'비교 분석 · 3종목', time:'10분 전', sel:true},
+    {tkrs:'BAC', meta:'단독 분석 · HOLD', time:'1시간 전'},
+    {tkrs:'HIG', meta:'단독 분석 · BUY', time:'어제'},
+  ];
+  $('#demo-history').innerHTML = hist.map(h=>
+    `<div class="hist-item ${h.sel?'sel':''}"><div class="who"><span class="tkrs">${h.tkrs}</span><span class="meta">${h.meta}</span></div>` +
+    `<span class="time">${h.time}</span></div>`).join('');
+
+  // ---- log timeline demo ----
+  const tl = [
+    {kind:'프롬프트', ts:'10:32:45', cls:'text', body:'/trade-decision HIG, 2026-07-11 기준으로 분석'},
+    {kind:'Agent 호출', ts:'10:32:47', cls:'', body:'fundamental-analyst, technical-analyst, news-analyst 병렬 실행'},
+    {kind:'Bash', ts:'10:32:51', cls:'', body:'<code>python scripts/market_data.py fundamentals HIG</code>'},
+    {kind:'오류', ts:'10:33:02', cls:'error', body:'FRED_API_KEY 미설정 → DATA_UNAVAILABLE (macro 지표 생략)'},
+    {kind:'완료', ts:'10:37:02', cls:'text', body:'BUY · Medium-High · journal.py decision 기록됨'},
+  ];
+  $('#demo-timeline').innerHTML = tl.map(t=>
+    `<div class="tlrow ${t.cls}"><div class="head"><span class="kind">${t.kind}</span><span class="ts mono">${t.ts}</span></div>` +
+    `<div class="body">${t.body}</div></div>`).join('');
+})();
+</script>
+</body>
+</html>
