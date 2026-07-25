@@ -231,5 +231,11 @@ data/scans/.cursor.json
 # data/journal/journal.jsonl
 # data/journal/journal.md
 
-# Generated dashboard HTML (scripts/build_dashboard.py)
-data/dashboard/*.html
+# Generated dashboard HTML (scripts/build_dashboard.py) — design docs under
+# data/dashboard/ are kept, only the build output is ignored.
+data/dashboard/dashboard.html
+# Per-session analysis records (dashboard trade-decision triggers)
+data/dashboard/analyses/*.json
+
+# macOS Finder metadata
+.DS_Store
