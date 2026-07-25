@@ -35,7 +35,6 @@ if _REPO_ROOT not in sys.path:
 
 SCANS_DIR = os.path.join(_REPO_ROOT, "data", "scans")
 DASH_DIR = os.path.join(_REPO_ROOT, "data", "dashboard")
-ANALYSES_DIR = os.path.join(_REPO_ROOT, "data", "dashboard", "analyses")
 TEMPLATE = os.path.join(_REPO_ROOT, "scripts", "dashboard_template.html")
 _MARKER = "/*__DATA__*/ null"
 
@@ -77,168 +76,21 @@ def _daily_cap_ok(weight: int = 1) -> bool:
         return True
 
 
-# ---- session persistence (dashboard_plan_v1.md §4.1) ----
-def _new_session_id(tickers: list[str]) -> str:
-    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    slug = "-".join(t.lower() for t in tickers[:3])
-    return f"{ts}-{slug}"
-
-
-def _session_path(session_id: str) -> str:
-    return os.path.join(ANALYSES_DIR, f"{session_id}.json")
-
-
-def save_session(session: dict) -> None:
-    os.makedirs(ANALYSES_DIR, exist_ok=True)
-    with open(_session_path(session["id"]), "w", encoding="utf-8") as fh:
-        json.dump(session, fh, ensure_ascii=False, indent=2)
-
-
-def get_session(session_id: str) -> dict | None:
-    path = _session_path(session_id)
-    if not os.path.exists(path):
-        return None
-    with open(path, encoding="utf-8") as fh:
-        return json.load(fh)
-
-
-def list_sessions(limit: int = 50) -> list[dict]:
-    files = glob.glob(os.path.join(ANALYSES_DIR, "*.json"))
-    files.sort(key=os.path.getmtime, reverse=True)
-    out = []
-    for f in files[:limit]:
-        try:
-            with open(f, encoding="utf-8") as fh:
-                out.append(json.load(fh))
-        except (json.JSONDecodeError, OSError):
-            continue
-    return out
-
-
-def _session_decisions(tickers: list[str], since: str | None = None) -> dict:
-    """Journal decisions (decision+conviction) per ticker logged by *this* session.
-
-    ``since`` is the job's start timestamp: only entries logged at/after it count.
-    Without that cutoff a run that logged nothing would silently inherit an old
-    verdict from a previous day and badge the session with it.
-    """
-    try:
-        from tradingagents.scanner import journal
-        entries = [e for e in journal.load_entries() if e.get("type") == "decision"]
-    except Exception:  # noqa: BLE001
-        return {}
-    if since:
-        entries = [e for e in entries if (e.get("logged_at") or "") >= since]
-    entries.sort(key=lambda e: e.get("logged_at", ""))
-    out = {}
-    for e in entries:
-        if e.get("ticker") in tickers:
-            out[e["ticker"]] = {"decision": e.get("decision"), "conviction": e.get("conviction")}
-    return out
-
-
-def _write_event(fh, ev: dict) -> None:
-    try:
-        fh.write(json.dumps({"ts": datetime.now().isoformat(timespec="seconds"), "ev": ev},
-                            ensure_ascii=False) + "\n")
-    except (OSError, TypeError, ValueError):
-        pass   # a transcript hiccup must never kill the analysis itself
-
-
-def _transcript_path(session_id: str) -> str:
-    return os.path.join(ANALYSES_DIR, f"{session_id}.jsonl")
-
-
-def _transcript_rel(session_id: str) -> str:
-    return f"analyses/{session_id}.jsonl"
-
-
-def read_transcript(session_id: str) -> list[dict] | None:
-    """Distil a saved transcript into a timeline the log tab can render directly.
-
-    Raw stream-json is verbose (full tool inputs/outputs, several KB per event),
-    so the parsing happens here and the browser only ever sees the summary.
-    """
-    path = _transcript_path(session_id)
-    if not os.path.exists(path):
-        return None
-    pending: dict[str, dict] = {}   # tool_use_id -> timeline item awaiting its result
-    out: list[dict] = []
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            ts, ev = rec.get("ts"), rec.get("ev") or {}
-            etype = ev.get("type")
-
-            if etype == "dashboard_meta":
-                out.append({"ts": ts, "kind": "prompt", "title": "요청 프롬프트",
-                            "body": ev.get("prompt", "")})
-                continue
-            if etype == "assistant":
-                for block in (ev.get("message") or {}).get("content", []):
-                    btype = block.get("type")
-                    if btype == "text":
-                        text = (block.get("text") or "").strip()
-                        if text:
-                            out.append({"ts": ts, "kind": "text", "title": "에이전트 메시지",
-                                        "body": _clip(text, 1200)})
-                    elif btype == "tool_use":
-                        item = {"ts": ts, "kind": "tool", "title": block.get("name", "?"),
-                                "body": _tool_summary(block.get("name", ""), block.get("input") or {}),
-                                "status": "running", "result": ""}
-                        tid = block.get("id")
-                        if tid:
-                            pending[tid] = item
-                        out.append(item)
-            elif etype == "user":
-                for block in (ev.get("message") or {}).get("content", []):
-                    if block.get("type") != "tool_result":
-                        continue
-                    item = pending.pop(block.get("tool_use_id"), None)
-                    if item is None:
-                        continue
-                    item["status"] = "error" if block.get("is_error") else "ok"
-                    item["result"] = _clip(_flatten_content(block.get("content")), 600)
-            elif etype == "result":
-                out.append({"ts": ts, "kind": "result", "title": "최종 응답",
-                            "body": _clip(ev.get("result") or "", 2000)})
-    for item in pending.values():   # never got a result (killed / timed out)
-        item["status"] = "unknown"
-    return out
-
-
-def _clip(text: str, limit: int) -> str:
-    text = (text or "").strip()
-    return text if len(text) <= limit else text[:limit] + f"\n… (+{len(text) - limit}자 생략)"
-
-
-def _flatten_content(content) -> str:
-    """tool_result content is either a string or a list of content blocks."""
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        return "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
-    return "" if content is None else str(content)
-
-
-def _tool_summary(name: str, tool_input: dict) -> str:
-    """One-line 'what was actually called', per tool shape."""
-    if name == "Bash":
-        return tool_input.get("command", "")
-    if name == "Agent":
-        return f"{tool_input.get('subagent_type', '?')} — {tool_input.get('description', '')}"
-    if name == "Skill":
-        return f"/{tool_input.get('skill', '?')} {tool_input.get('args', '')}".strip()
-    for key in ("file_path", "pattern", "path", "url", "query"):
-        if tool_input.get(key):
-            return f"{key}={tool_input[key]}"
-    return _clip(json.dumps(tool_input, ensure_ascii=False), 200)
+# ---- session persistence + transcripts: see tradingagents/scanner/session_store.py ----
+# That module is the single writer of the §4.1 record shape, shared with the
+# CLI/Telegram path (scripts/session_log.py) so every trigger lands in one store.
+from tradingagents.scanner.session_store import (  # noqa: E402
+    ANALYSES_DIR,
+    get_session,
+    list_sessions,
+    read_transcript,
+    save_session,
+)
+from tradingagents.scanner.session_store import new_session_id as _new_session_id  # noqa: E402
+from tradingagents.scanner.session_store import session_decisions as _session_decisions  # noqa: E402
+from tradingagents.scanner.session_store import transcript_path as _transcript_path  # noqa: E402
+from tradingagents.scanner.session_store import transcript_rel as _transcript_rel  # noqa: E402
+from tradingagents.scanner.session_store import write_event as _write_event  # noqa: E402
 
 
 def _job_env() -> dict:
