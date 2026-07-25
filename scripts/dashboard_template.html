@@ -250,6 +250,31 @@
   .hist-item .ttl{font-size:12.5px; font-weight:650; margin-top:1px;}
   .hist-item .desc{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
+  /* ---- log tab: execution timeline ---- */
+  .timeline{display:flex; flex-direction:column;}
+  .tl-item{display:grid; grid-template-columns:60px 1fr; gap:10px; padding:9px 0;
+    border-top:1px solid var(--grid);}
+  .tl-item:first-child{border-top:none;}
+  .tl-time{font-family:var(--mono); font-size:10.5px; color:var(--muted); padding-top:2px;}
+  .tl-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .tl-kind{font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:2px 6px; border-radius:4px; background:var(--surface-2); color:var(--muted);
+    border:1px solid var(--border);}
+  .tl-item.k-prompt .tl-kind{background:rgba(59,130,246,.14); color:#3b82f6; border-color:rgba(59,130,246,.3);}
+  .tl-item.k-result .tl-kind{background:rgba(22,163,74,.14); color:var(--good); border-color:rgba(22,163,74,.3);}
+  .tl-item.k-tool .tl-kind{background:rgba(245,158,11,.14); color:var(--warn); border-color:rgba(245,158,11,.3);}
+  .tl-name{font-size:12.5px; font-weight:650;}
+  .tl-status{font-size:10px; font-family:var(--mono); color:var(--muted);}
+  .tl-status.err{color:var(--bad);}
+  .tl-body{font-family:var(--mono); font-size:11.5px; color:var(--ink-2); line-height:1.6;
+    white-space:pre-wrap; word-break:break-word; margin-top:4px;}
+  .tl-out{font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.55;
+    white-space:pre-wrap; word-break:break-word; margin-top:5px; padding:7px 9px;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:5px; max-height:220px; overflow:auto;}
+  .logbar{display:flex; align-items:center; gap:9px; flex-wrap:wrap; padding-bottom:12px;
+    margin-bottom:6px; border-bottom:1px solid var(--grid);}
+  .logbar .grow{flex:1;}
+
   .foot{color:var(--muted); font-size:11.5px; text-align:center; padding:6px 0 2px;}
   .foot a{color:var(--accent); text-decoration:none;}
 </style>
@@ -335,12 +360,12 @@
 
     <!-- ============= LOG ============= -->
     <section class="panel-view" id="view-log">
-      <div class="panel">
-        <h3 style="margin-bottom:8px;">Agent Execution Log</h3>
-        <p style="font-size:12.5px; color:var(--muted); margin:0;">
-          로그 캡처는 아직 지원되지 않습니다 — 분석 세션의 프롬프트/도구 호출 트랜스크립트를
-          저장하는 기능은 다음 단계에서 추가될 예정입니다.
-        </p>
+      <div class="resultgrid">
+        <div class="panel" id="logpane"></div>
+        <div class="panel" style="padding:0;">
+          <h3 style="padding:16px 17px 0;">분석 세션</h3>
+          <div class="hist-list" id="loglist"></div>
+        </div>
       </div>
     </section>
 
@@ -834,9 +859,85 @@ window.__DASHBOARD__ = /*__DATA__*/ null;
   });
   renderReport(sessions[0]);
 
+  // ---- Log tab: execution timeline per session ----
+  // Transcripts are megabytes of raw stream-json, so they are never inlined into
+  // the page — the server distils one into a timeline and we fetch it on demand.
+  const KIND_LABEL = {prompt:'프롬프트', text:'메시지', tool:'도구 호출', result:'최종 응답'};
+  let logSessionIdx = -1;
+
+  function timelineHTML(events){
+    if(!events.length) return `<div class="empty">이 세션에는 기록된 이벤트가 없습니다.</div>`;
+    return `<div class="timeline">`+events.map(ev=>{
+      const time = (ev.ts||'').split('T')[1] || '';
+      const st = ev.status;
+      const statusTxt = st==='ok' ? '완료' : st==='error' ? '실패' : st==='running' ? '실행 중' : st==='unknown' ? '결과 없음' : '';
+      return `<div class="tl-item k-${esc(ev.kind)}">`+
+        `<div class="tl-time">${esc(time)}</div>`+
+        `<div><div class="tl-head"><span class="tl-kind">${esc(KIND_LABEL[ev.kind]||ev.kind)}</span>`+
+          `<span class="tl-name">${esc(ev.title||'')}</span>`+
+          (statusTxt?`<span class="tl-status ${st==='error'?'err':''}">${esc(statusTxt)}</span>`:'')+
+        `</div>`+
+        (ev.body?`<div class="tl-body">${esc(ev.body)}</div>`:'')+
+        (ev.result?`<div class="tl-out">${esc(ev.result)}</div>`:'')+
+      `</div></div>`;
+    }).join('')+`</div>`;
+  }
+
+  async function loadLog(idx){
+    const s = sessions[idx];
+    logSessionIdx = idx;
+    document.querySelectorAll('#loglist .hist-item').forEach(x=>x.classList.remove('sel'));
+    const item = document.querySelector(`#loglist .hist-item[data-idx="${idx}"]`);
+    if(item) item.classList.add('sel');
+    const pane = $('#logpane');
+    if(!s){ pane.innerHTML = `<div class="empty">저장된 분석 세션이 없습니다.</div>`; return; }
+    const head = `<div class="logbar"><b style="font-size:14px;">${esc(sessionTitle(s))}</b>`+
+      `<span class="mono" style="font-size:11px; color:var(--muted);">${esc(s.id||'')}</span>`+
+      `<span class="grow"></span>${sessionBadgesHTML(s)}</div>`;
+    if(!liveMode){
+      pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--muted);">`+
+        `실행 로그는 라이브 서버(<span class="mono">--serve</span>)에서만 조회할 수 있습니다 — `+
+        `정적으로 저장된 HTML에는 트랜스크립트가 포함되지 않습니다.</p>`;
+      return;
+    }
+    pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--muted);">로그를 불러오는 중…</p>`;
+    try{
+      const res = await fetch(`/api/session/${encodeURIComponent(s.id)}/log`);
+      if(!res.ok) throw new Error(res.status===404 ? '이 세션에는 저장된 트랜스크립트가 없습니다 (로그 기능 도입 이전 세션)' : `HTTP ${res.status}`);
+      const data = await res.json();
+      if(logSessionIdx !== idx) return;   // user switched sessions while fetching
+      pane.innerHTML = head + timelineHTML(data.events||[]);
+    }catch(err){
+      if(logSessionIdx !== idx) return;
+      pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--bad);">${esc(err.message||String(err))}</p>`;
+    }
+  }
+
+  $('#loglist').innerHTML = sessions.length
+    ? sessions.map((s,i)=>
+        `<div class="hist-item" data-idx="${i}"><span class="time mono">${esc((s.completed_at||s.requested_at||'').replace('T',' '))}</span>`+
+        `<span class="ttl">${esc(sessionTitle(s))}</span><span class="desc">${esc(s.status||'')}</span></div>`).join('')
+    : `<div class="empty">저장된 분석 세션이 없습니다.</div>`;
+  $('#loglist').addEventListener('click', (e)=>{
+    const item = e.target.closest('.hist-item');
+    if(item) loadLog(Number(item.dataset.idx));
+  });
+  if(sessions.length) loadLog(0); else loadLog(-1);
+
   // ---- footer + auto-refresh ----
   $('#foot').innerHTML = `생성 ${esc(d.generated_at||'—')} · 의사결정 지원용이며 투자자문이 아닙니다`+
      (d.live?` · ${d.refresh_seconds||60}초마다 자동 새로고침`:'');
-  if(d.live && d.refresh_seconds){ setTimeout(()=>location.reload(), d.refresh_seconds*1000); }
+  // Auto-refresh only while the scan tab is showing and nothing is running —
+  // a reload mid-analysis would drop the progress state, and reloading out from
+  // under someone reading a report or a log is worse than being a minute stale.
+  if(d.live && d.refresh_seconds){
+    const tick = ()=>{
+      const busy = Object.keys(runningJobs).length > 0;
+      const onScan = document.querySelector('#view-scan').classList.contains('active');
+      if(!busy && onScan) location.reload();
+      else setTimeout(tick, d.refresh_seconds*1000);
+    };
+    setTimeout(tick, d.refresh_seconds*1000);
+  }
 })();
 </script>

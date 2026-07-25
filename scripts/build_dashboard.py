@@ -137,6 +137,110 @@ def _session_decisions(tickers: list[str], since: str | None = None) -> dict:
     return out
 
 
+def _write_event(fh, ev: dict) -> None:
+    try:
+        fh.write(json.dumps({"ts": datetime.now().isoformat(timespec="seconds"), "ev": ev},
+                            ensure_ascii=False) + "\n")
+    except (OSError, TypeError, ValueError):
+        pass   # a transcript hiccup must never kill the analysis itself
+
+
+def _transcript_path(session_id: str) -> str:
+    return os.path.join(ANALYSES_DIR, f"{session_id}.jsonl")
+
+
+def _transcript_rel(session_id: str) -> str:
+    return f"analyses/{session_id}.jsonl"
+
+
+def read_transcript(session_id: str) -> list[dict] | None:
+    """Distil a saved transcript into a timeline the log tab can render directly.
+
+    Raw stream-json is verbose (full tool inputs/outputs, several KB per event),
+    so the parsing happens here and the browser only ever sees the summary.
+    """
+    path = _transcript_path(session_id)
+    if not os.path.exists(path):
+        return None
+    pending: dict[str, dict] = {}   # tool_use_id -> timeline item awaiting its result
+    out: list[dict] = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            ts, ev = rec.get("ts"), rec.get("ev") or {}
+            etype = ev.get("type")
+
+            if etype == "dashboard_meta":
+                out.append({"ts": ts, "kind": "prompt", "title": "요청 프롬프트",
+                            "body": ev.get("prompt", "")})
+                continue
+            if etype == "assistant":
+                for block in (ev.get("message") or {}).get("content", []):
+                    btype = block.get("type")
+                    if btype == "text":
+                        text = (block.get("text") or "").strip()
+                        if text:
+                            out.append({"ts": ts, "kind": "text", "title": "에이전트 메시지",
+                                        "body": _clip(text, 1200)})
+                    elif btype == "tool_use":
+                        item = {"ts": ts, "kind": "tool", "title": block.get("name", "?"),
+                                "body": _tool_summary(block.get("name", ""), block.get("input") or {}),
+                                "status": "running", "result": ""}
+                        tid = block.get("id")
+                        if tid:
+                            pending[tid] = item
+                        out.append(item)
+            elif etype == "user":
+                for block in (ev.get("message") or {}).get("content", []):
+                    if block.get("type") != "tool_result":
+                        continue
+                    item = pending.pop(block.get("tool_use_id"), None)
+                    if item is None:
+                        continue
+                    item["status"] = "error" if block.get("is_error") else "ok"
+                    item["result"] = _clip(_flatten_content(block.get("content")), 600)
+            elif etype == "result":
+                out.append({"ts": ts, "kind": "result", "title": "최종 응답",
+                            "body": _clip(ev.get("result") or "", 2000)})
+    for item in pending.values():   # never got a result (killed / timed out)
+        item["status"] = "unknown"
+    return out
+
+
+def _clip(text: str, limit: int) -> str:
+    text = (text or "").strip()
+    return text if len(text) <= limit else text[:limit] + f"\n… (+{len(text) - limit}자 생략)"
+
+
+def _flatten_content(content) -> str:
+    """tool_result content is either a string or a list of content blocks."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
+    return "" if content is None else str(content)
+
+
+def _tool_summary(name: str, tool_input: dict) -> str:
+    """One-line 'what was actually called', per tool shape."""
+    if name == "Bash":
+        return tool_input.get("command", "")
+    if name == "Agent":
+        return f"{tool_input.get('subagent_type', '?')} — {tool_input.get('description', '')}"
+    if name == "Skill":
+        return f"/{tool_input.get('skill', '?')} {tool_input.get('args', '')}".strip()
+    for key in ("file_path", "pattern", "path", "url", "query"):
+        if tool_input.get(key):
+            return f"{key}={tool_input[key]}"
+    return _clip(json.dumps(tool_input, ensure_ascii=False), 200)
+
+
 def _job_env() -> dict:
     """Environment for the headless `claude` child: repo venv first on PATH.
 
@@ -180,7 +284,8 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
             "source": "dashboard", "requested_by": "web",
             "requested_at": started_at,
             "completed_at": None, "status": "running",
-            "decisions": {}, "report_markdown": "", "transcript_path": None, "error": None,
+            "decisions": {}, "report_markdown": "", "transcript_path": _transcript_rel(session_id),
+            "error": None,
         })
 
         if mode == "single":
@@ -210,6 +315,14 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
         raw_tail: list[str] = []
         report_text = ""
         proc = None
+        # Transcript (§4.2): one line per event, `{"ts": <wall clock>, "ev": <raw
+        # stream-json event verbatim>}`. The wrapper only adds a timestamp, which
+        # the events themselves don't carry — `ev` is untouched, so the file stays
+        # a faithful record of what the agent actually did.
+        os.makedirs(ANALYSES_DIR, exist_ok=True)
+        transcript = open(_transcript_path(session_id), "w", encoding="utf-8", buffering=1)  # noqa: SIM115
+        _write_event(transcript, {"type": "dashboard_meta", "prompt": prompt,
+                                  "tickers": tickers, "mode": mode, "started_at": started_at})
         try:
             proc = subprocess.Popen(
                 ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose"],
@@ -237,6 +350,7 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
                     ev = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                _write_event(transcript, ev)
 
                 etype = ev.get("type")
                 if etype == "assistant":
@@ -279,7 +393,7 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
                     "id": session_id, "type": mode, "tickers": tickers,
                     "source": "dashboard", "requested_by": "web",
                     "requested_at": started_at, "completed_at": finished_at, "status": "error",
-                    "decisions": {}, "report_markdown": report_text, "transcript_path": None,
+                    "decisions": {}, "report_markdown": report_text, "transcript_path": _transcript_rel(session_id),
                     "error": error_msg,
                 })
             else:
@@ -290,7 +404,7 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
                     "source": "dashboard", "requested_by": "web",
                     "requested_at": started_at, "completed_at": finished_at, "status": "done",
                     "decisions": _session_decisions(tickers, since=started_at),
-                    "report_markdown": report_text, "transcript_path": None, "error": None,
+                    "report_markdown": report_text, "transcript_path": _transcript_rel(session_id), "error": None,
                 })
         except Exception as exc:  # noqa: BLE001
             if proc is not None and proc.poll() is None:
@@ -302,9 +416,11 @@ def _run_job(job_key: str, session_id: str, tickers: list[str], mode: str) -> No
                 "id": session_id, "type": mode, "tickers": tickers,
                 "source": "dashboard", "requested_by": "web",
                 "requested_at": started_at, "completed_at": finished_at, "status": "error",
-                "decisions": {}, "report_markdown": report_text, "transcript_path": None,
+                "decisions": {}, "report_markdown": report_text, "transcript_path": _transcript_rel(session_id),
                 "error": str(exc),
             })
+        finally:
+            transcript.close()
 
 
 def start_analysis(ticker: str) -> dict:
@@ -347,8 +463,23 @@ def start_compare(tickers_raw: str) -> dict:
 
 
 def job_status(job_key: str) -> dict:
+    """Status by job key — the ticker for single runs, the session id for compares.
+
+    Single-ticker jobs are keyed by ticker so a second click on the same row finds
+    the running job, but callers holding only a session id (the plan's
+    /api/sessions/{id}/status contract) must work too, hence the fallback scan.
+    """
     with _JOBS_LOCK:
-        return dict(_JOBS.get(job_key, {"status": "idle"}))
+        if job_key in _JOBS:
+            return dict(_JOBS[job_key])
+        for job in _JOBS.values():
+            if job.get("session_id") == job_key:
+                return dict(job)
+    session = get_session(job_key)   # already finished and evicted, or a past run
+    if session:
+        return {"status": session.get("status", "idle"), "session_id": job_key,
+                "finished_at": session.get("completed_at"), "error": session.get("error")}
+    return {"status": "idle"}
 
 _SKELETON = (
     '<!doctype html><html lang="ko"><head><meta charset="utf-8">'
@@ -455,6 +586,13 @@ def serve(port: int, refresh: int) -> int:
                 rest = parsed.path[len("/api/session/"):]
                 if rest.endswith("/status"):
                     self._json(job_status(rest[: -len("/status")]))
+                    return
+                if rest.endswith("/log"):
+                    timeline = read_transcript(rest[: -len("/log")])
+                    if timeline is None:
+                        self.send_error(404)
+                        return
+                    self._json({"events": timeline})
                     return
                 session = get_session(rest)
                 if session is None:

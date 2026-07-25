@@ -236,6 +236,7 @@ data/scans/.cursor.json
 data/dashboard/dashboard.html
 # Per-session analysis records (dashboard trade-decision triggers)
 data/dashboard/analyses/*.json
+data/dashboard/analyses/*.jsonl
 
 # macOS Finder metadata
 .DS_Store
