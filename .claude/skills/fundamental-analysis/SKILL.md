@@ -38,8 +38,23 @@ to see multi-year trends.
 1. **Fetch** the fundamentals snapshot and at least the income statement. Add
    balance sheet + cash flow when leverage, liquidity, or cash generation matter.
 2. **Assess** across these axes, grounding every number in tool output:
-   - **Valuation** — P/E, P/S, P/B, EV/EBITDA, PEG vs. the company's history and sector.
-   - **Profitability** — gross / operating / net margins, ROE, ROA, and their trend.
+   - **Valuation — forward basis, not trailing.** Lead with **Forward P/E**
+     (`fundamentals` output) and a **forward PEG** (Forward P/E ÷ expected
+     forward EPS growth rate — derive the growth rate from
+     `forwardEps`/`trailingEps` or from analyst estimates if present; state
+     which you used). Do the same for P/S and EV/EBITDA where a forward
+     revenue/EBITDA figure is available. Only cite trailing multiples (TTM
+     P/E, trailing PEG) as supporting context, never as the headline number —
+     forward is what belongs in the summary and the key-metrics table.
+   - **Profitability** — gross / operating / net margins, **ROE and ROIC**,
+     and their trend.
+     - ROE comes straight from `fundamentals` (`Return on Equity`).
+     - ROIC is not a CLI field — compute it: `ROIC = NOPAT / Invested Capital`,
+       where `NOPAT = EBIT × (1 − effective tax rate)`, `effective tax rate =
+       Income Tax Expense / Pretax Income` (from `income`), and
+       `Invested Capital = Total Debt + Total Stockholders' Equity − Cash &
+       Cash Equivalents` (from `balance-sheet`). Show the inputs, not just the
+       result, so the number is auditable.
    - **Growth** — revenue and EPS growth, QoQ and YoY; is it accelerating or decelerating?
    - **Financial health** — debt/equity, current ratio, interest coverage, cash runway.
    - **Cash generation** — operating & free cash flow, FCF margin, buybacks/dividends.
@@ -54,7 +69,9 @@ A markdown report:
 - **Summary** (3–5 sentences): the fundamental thesis in plain terms.
 - **Sections** for valuation, profitability, growth, financial health, cash flow.
 - **Risks & watch-items.**
-- A **key-metrics table** at the end (metric | value | trend | read).
+- A **key-metrics table** at the end (metric | value | trend | read). Valuation
+  rows lead with forward multiples (Forward P/E, forward PEG, etc.); include
+  ROE and ROIC as separate rows.
 - A one-line **fundamental lean: BUY / HOLD / SELL** with the single strongest
   supporting fact. This is *only* the fundamental view — position sizing and the
   final call belong to `trade-decision`.

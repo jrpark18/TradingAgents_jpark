@@ -20,6 +20,10 @@ Follow the method in `.claude/skills/fundamental-analysis/SKILL.md`. In short:
    - `python scripts/market_data.py insider <T>` for insider signals
 2. Assess valuation, profitability, growth, financial health, and cash generation
    — every figure grounded in tool output.
+   - Valuation: lead with **forward** multiples (Forward P/E, forward PEG),
+     not trailing — trailing is supporting context only.
+   - Profitability: report both **ROE** (from `fundamentals`) and **ROIC**
+     (computed: NOPAT / Invested Capital — see the skill for the formula).
 3. If the CLI returns `NO_DATA_AVAILABLE` / `DATA_UNAVAILABLE`, report the metric
    as unavailable. Never estimate or fabricate a number.
 
