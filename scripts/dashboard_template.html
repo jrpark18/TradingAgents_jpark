@@ -1,0 +1,943 @@
+<style>
+  /* ---- tokens: both themes, driven off the dataviz reference palette ---- */
+  :root{
+    --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f2ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,.10); --track:#eae9e2;
+    --accent:#2a78d6; --aqua:#1baf7a; --violet:#4a3aa7;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(11,11,11,.05),0 8px 24px rgba(11,11,11,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+      --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+      --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e05656;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+    --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+    --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e05656;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f2ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,.10); --track:#eae9e2;
+    --accent:#2a78d6; --aqua:#1baf7a; --violet:#4a3aa7;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(11,11,11,.05),0 8px 24px rgba(11,11,11,.06);
+  }
+
+  *{box-sizing:border-box;}
+  .dash{
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--plane); color:var(--ink);
+    min-height:100vh; line-height:1.45; -webkit-font-smoothing:antialiased;
+  }
+  .dash h1,.dash h2,.dash h3{margin:0; text-wrap:balance;}
+  .mono{font-family:var(--mono); font-variant-numeric:tabular-nums;}
+  button{font:inherit; cursor:pointer;}
+  svg{display:block;}
+  .wrap{max-width:1280px; margin:0 auto; padding:clamp(14px,2.5vw,28px); display:flex; flex-direction:column; gap:18px;}
+
+  /* ---- top nav ---- */
+  .topnav{position:sticky; top:0; z-index:50; background:var(--surface);
+    border-bottom:1px solid var(--border); box-shadow:var(--shadow);}
+  .topnav-in{max-width:1280px; margin:0 auto; padding:0 clamp(14px,2.5vw,28px);
+    height:54px; display:flex; align-items:center; gap:20px;}
+  .brand{display:flex; align-items:baseline; gap:9px; white-space:nowrap;}
+  .brand .dot{width:8px; height:8px; border-radius:50%; background:var(--muted); align-self:center;}
+  .brand .dot.live{background:var(--good); animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(12,163,12,.5);}70%{box-shadow:0 0 0 6px rgba(12,163,12,0);}100%{box-shadow:0 0 0 0 rgba(12,163,12,0);}}
+  @media (prefers-reduced-motion:reduce){.brand .dot.live{animation:none;}}
+  .brand h1{font-size:15.5px; font-weight:700; letter-spacing:-.01em;}
+  .navtabs{display:flex; gap:2px; height:100%;}
+  .navtab{height:100%; background:none; border:none; padding:0 12px; font-size:13px; font-weight:640;
+    color:var(--muted); position:relative; display:flex; align-items:center;}
+  .navtab:hover{color:var(--ink-2);}
+  .navtab.active{color:var(--ink);}
+  .navtab.active::after{content:""; position:absolute; left:8px; right:8px; bottom:0; height:2px;
+    background:var(--accent); border-radius:2px 2px 0 0;}
+  .navsearch{margin-left:auto; display:flex; align-items:center; gap:6px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:8px; padding:5px 10px; color:var(--muted); min-width:170px;}
+  .navsearch input{background:none; border:none; outline:none; color:var(--ink); font:inherit; font-size:12.5px; width:100%;}
+  .navsearch input::placeholder{color:var(--muted);}
+  .toggle{font:inherit; font-size:12px; color:var(--ink-2);
+    background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:5px 10px;}
+  .toggle:hover{color:var(--ink); border-color:var(--muted);}
+  .toggle:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{font-family:var(--mono); font-size:11.5px; color:var(--ink-2);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:999px;
+    padding:3px 9px; white-space:nowrap;}
+  .chip b{color:var(--ink); font-weight:600;}
+  .chip.off{opacity:.5;}
+
+  /* ---- tab panels: plain CSS, no framework race ---- */
+  .panel-view{display:none; flex-direction:column; gap:18px;}
+  .panel-view.active{display:flex;}
+
+  /* ---- KPI tiles ---- */
+  .kpis{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:13px 15px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:3px;}
+  .tile .k{font-size:11.5px; color:var(--muted); letter-spacing:.03em; text-transform:uppercase;}
+  .tile .v{font-family:var(--mono); font-size:26px; font-weight:640; letter-spacing:-.02em;}
+  .tile .cap{font-size:11.5px; color:var(--ink-2);}
+  .tile.accent .v{color:var(--accent);} .tile.aqua .v{color:var(--aqua);}
+  .tile.violet .v{color:var(--violet);} .tile.good .v{color:var(--good);}
+  .tile.crit .v{color:var(--critical);}
+
+  /* ---- panels / charts ---- */
+  .cols{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px 17px; box-shadow:var(--shadow);}
+  .panel > header{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:13px;}
+  .panel h2,.panel h3{font-size:13.5px; font-weight:640; letter-spacing:.01em;}
+  .panel .hint{font-size:11.5px; color:var(--muted);}
+
+  .barlist{display:flex; flex-direction:column; gap:8px;}
+  .barrow{display:grid; grid-template-columns:96px 1fr 34px; align-items:center; gap:10px;}
+  .barrow .lab{font-size:12px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .barrow .val{font-family:var(--mono); font-size:12px; color:var(--ink-2); text-align:right;}
+  .track{height:9px; background:var(--track); border-radius:999px; overflow:hidden;}
+  .fill{height:100%; border-radius:999px; background:var(--accent); min-width:3px;}
+
+  /* histogram */
+  .hist{display:flex; align-items:flex-end; gap:3px; height:104px; padding-top:6px;}
+  .hist .col{flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%; cursor:pointer;}
+  .hist .bar{background:var(--accent); border-radius:4px 4px 2px 2px; min-height:2px; transition:height .2s,opacity .15s;}
+  .hist .bar.dim{background:var(--track);}
+  .hist.filtering .col:not(.active) .bar{opacity:.3;}
+  .hist .col.active .bar{outline:2px solid var(--accent); outline-offset:1px;}
+  .axis{display:flex; justify-content:space-between; margin-top:6px; font-size:10.5px; color:var(--muted);}
+  .hint.filter-active{color:var(--accent); font-weight:650;}
+
+  /* ---- ticker card carousel ---- */
+  .carousel{display:flex; gap:12px; overflow-x:auto; padding-bottom:2px;}
+  .tcard{min-width:190px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:13px; display:flex; flex-direction:column; gap:9px; flex:0 0 auto;}
+  .tcard .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .tcard .tk{font-size:16px; font-weight:700;}
+  .tcard .sect{font-size:10.5px; color:var(--muted); display:block; margin-top:1px;}
+  .tcard .sc{display:flex; justify-content:space-between; font-family:var(--mono); font-size:11.5px; color:var(--ink-2);}
+  .chip-neutral{font-size:10.5px; font-weight:650; color:var(--muted); background:var(--track);
+    border:1px solid var(--border); border-radius:999px; padding:2px 8px; white-space:nowrap;}
+
+  /* ---- decision badge ---- */
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:3px 9px 3px 8px;
+    border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.01em; white-space:nowrap;}
+  .badge .conv{display:inline-flex; gap:2px;}
+  .badge .conv i{width:4px; height:4px; border-radius:50%; background:currentColor; opacity:.3;}
+  .badge .conv i.on{opacity:1;}
+  .badge.buy{color:#fff; background:var(--good);}
+  .badge.sell{color:#fff; background:var(--critical);}
+  .badge.hold{color:var(--ink-2); background:var(--track); border:1px solid var(--border);}
+
+  /* ---- ranking tables (accordion) ---- */
+  .table{background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); overflow:hidden;}
+  .table > header{display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--grid);}
+  .table > header .stripe{width:4px; height:18px; border-radius:2px; background:var(--accent);}
+  .table.sweet > header .stripe{background:var(--accent);}
+  .table.value > header .stripe{background:var(--aqua);}
+  .table.up > header .stripe{background:var(--violet);}
+  .table .count{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--muted);}
+  .tkr{font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.01em;}
+  .empty{color:var(--muted); font-size:12.5px; padding:16px;}
+
+  .stocklist{display:flex; flex-direction:column;}
+  .stockrow{border-top:1px solid var(--grid);}
+  .stockrow:first-child{border-top:none;}
+  .stockrow-main{display:grid; grid-template-columns:18px 64px minmax(0,118px) 1fr auto 16px; align-items:center;
+    gap:12px; padding:11px 16px; cursor:pointer; border-left:3px solid transparent;}
+  .rowcheck{width:15px; height:15px; margin:0; accent-color:var(--accent); cursor:pointer;}
+  .stockrow-main:hover{background:var(--surface-2);}
+  .stockrow.open .stockrow-main{border-left-color:var(--accent); background:var(--surface-2);}
+  .stockrow-main .sect-tag{font-size:10.5px; color:var(--muted); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:2px 7px; white-space:nowrap; justify-self:start;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis;}
+  .stockrow.open .stockrow-main .sect-tag{background:var(--surface);}
+  .stockrow-main .summary{font-size:12.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .stockrow-main .chev{color:var(--muted); transition:transform .15s ease; display:flex;}
+  .stockrow.open .stockrow-main .chev{transform:rotate(180deg); color:var(--ink-2);}
+  .stockrow-detail-wrap{display:grid; grid-template-rows:0fr; transition:grid-template-rows .18s ease;}
+  .stockrow.open .stockrow-detail-wrap{grid-template-rows:1fr;}
+  .stockrow-detail{overflow:hidden; min-height:0;}
+  .stockrow-detail-in{padding:2px 16px 16px 16px; display:flex; flex-direction:column; gap:12px;}
+  .factorgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .factorgrid .f .lab{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;
+    display:flex; justify-content:space-between; margin-bottom:4px;}
+  .factorgrid .f .lab b{font-family:var(--mono); color:var(--ink-2); font-weight:600;}
+  .mt{height:5px; width:100%; background:var(--track); border-radius:999px; overflow:hidden;}
+  .mtf{height:100%; border-radius:999px;}
+  .flags{display:flex; flex-wrap:wrap; gap:4px;}
+  .flag{font-size:10.5px; color:var(--ink-2); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:1px 6px; white-space:nowrap;}
+  .flag.good{color:var(--good); border-color:color-mix(in srgb,var(--good) 35%,transparent);}
+  .flag.crit{color:var(--critical); border-color:color-mix(in srgb,var(--critical) 40%,transparent); font-weight:600;}
+  .stockrow-detail .note{font-size:12.5px; color:var(--ink-2); margin:0;}
+  .runbtn{font-size:11.5px; font-weight:650; color:#fff; background:var(--accent); border:none;
+    border-radius:7px; padding:6px 12px; align-self:flex-start;}
+  .runbtn:hover{opacity:.9;} .runbtn:disabled{opacity:.5; cursor:default;}
+  .runstatus{font-size:11.5px; color:var(--muted); font-family:var(--mono); display:inline-flex; align-items:center; gap:5px;}
+  .runstatus .pulse{width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; animation:runpulse 1.2s ease-in-out infinite;}
+  .runstatus.err .pulse{background:var(--critical); animation:none; opacity:.8;}
+  @keyframes runpulse{0%,100%{opacity:.25; transform:scale(.75);} 50%{opacity:1; transform:scale(1);}}
+  @media (prefers-reduced-motion:reduce){.runstatus .pulse{animation:none; opacity:.7;}}
+  .runrow{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .datechip{color:var(--muted); font-size:11.5px;}
+  .golink{font-size:11.5px; color:var(--accent); font-weight:650; background:none; border:none; padding:0; cursor:pointer;}
+  .golink:hover{text-decoration:underline;}
+  .chartlink{font-size:11.5px; color:var(--muted); font-weight:650; text-decoration:none;
+             display:inline-flex; align-items:center; gap:3px; white-space:nowrap;}
+  .chartlink:hover{color:var(--accent); text-decoration:underline;}
+
+  /* ---- compare selection bar (floating) ---- */
+  .comparebar{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:60;
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:9px 14px; box-shadow:var(--shadow); max-width:calc(100vw - 32px); flex-wrap:wrap;}
+  .comparebar[hidden]{display:none;}
+  .comparebar .cnt{font-size:12.5px; font-weight:650; white-space:nowrap;}
+  .comparehint{font-size:11px; color:var(--muted); white-space:nowrap;}
+  .clearbtn{background:none; border:1px solid var(--border); border-radius:7px; width:26px; height:26px;
+    color:var(--ink-2); font-size:13px; line-height:1; cursor:pointer; flex:0 0 auto;}
+  .clearbtn:hover{color:var(--ink); border-color:var(--muted);}
+
+  /* ---- result tab ---- */
+  .resultgrid{display:grid; grid-template-columns:1fr 300px; gap:14px; align-items:start;}
+  @media (max-width:860px){.resultgrid{grid-template-columns:1fr;}}
+  .report .rhead{display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+    padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--grid);}
+  .report .rhead h2{font-size:21px; font-weight:700; display:flex; align-items:baseline; gap:9px;}
+  .report .rhead h2 small{font-size:12px; font-weight:500; color:var(--muted);}
+  .report .meta{font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .report .rhead .side{display:flex; flex-direction:row; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:6px; max-width:44%;}
+  .report .rhead .conviction-lab{font-size:10px; color:var(--muted);}
+  .report p{font-size:13px; color:var(--ink-2); line-height:1.7; white-space:pre-wrap;}
+
+  /* ---- rendered markdown report ---- */
+  .md h2{font-size:16px; font-weight:700; margin:20px 0 8px;}
+  .md h2:first-child{margin-top:0;}
+  .md h3{font-size:14px; font-weight:650; margin:16px 0 6px;}
+  .md h4,.md h5{font-size:12.5px; font-weight:650; margin:12px 0 5px; color:var(--ink-2);}
+  .md p{font-size:13px; color:var(--ink-2); line-height:1.7; margin:0 0 10px;}
+  .md ul,.md ol{margin:0 0 10px; padding-left:20px; font-size:13px; color:var(--ink-2); display:flex; flex-direction:column; gap:4px;}
+  .md b{color:var(--ink);}
+  .md code{font-family:var(--mono); font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:4px; padding:1px 5px;}
+  .md hr{border:none; border-top:1px solid var(--grid); margin:18px 0;}
+  .md .mdtable-wrap{overflow-x:auto; margin:0 0 14px;}
+  .md table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .md th{font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted);
+    text-align:left; font-weight:600; padding:6px 10px; border-bottom:1px solid var(--grid); white-space:nowrap;}
+  .md td{padding:7px 10px; border-top:1px solid var(--grid); color:var(--ink-2); vertical-align:top;}
+
+  .hist-list{display:flex; flex-direction:column;}
+  .hist-item{display:flex; flex-direction:column; gap:2px; padding:10px 12px; cursor:pointer;
+    border-left:3px solid transparent; border-bottom:1px solid var(--grid);}
+  .hist-item:hover{background:var(--surface-2);}
+  .hist-item.sel{border-left-color:var(--accent); background:var(--surface-2);}
+  .hist-item .time{font-family:var(--mono); font-size:10px; color:var(--muted);}
+  .hist-item .ttl{font-size:12.5px; font-weight:650; margin-top:1px;}
+  .hist-item .desc{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  /* ---- log tab: execution timeline ---- */
+  .timeline{display:flex; flex-direction:column;}
+  .tl-item{display:grid; grid-template-columns:60px 1fr; gap:10px; padding:9px 0;
+    border-top:1px solid var(--grid);}
+  .tl-item:first-child{border-top:none;}
+  .tl-time{font-family:var(--mono); font-size:10.5px; color:var(--muted); padding-top:2px;}
+  .tl-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .tl-kind{font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:2px 6px; border-radius:4px; background:var(--surface-2); color:var(--muted);
+    border:1px solid var(--border);}
+  .tl-item.k-prompt .tl-kind{background:rgba(59,130,246,.14); color:#3b82f6; border-color:rgba(59,130,246,.3);}
+  .tl-item.k-result .tl-kind{background:rgba(22,163,74,.14); color:var(--good); border-color:rgba(22,163,74,.3);}
+  .tl-item.k-tool .tl-kind{background:rgba(245,158,11,.14); color:var(--warn); border-color:rgba(245,158,11,.3);}
+  .tl-name{font-size:12.5px; font-weight:650;}
+  .tl-status{font-size:10px; font-family:var(--mono); color:var(--muted);}
+  .tl-status.err{color:var(--bad);}
+  .tl-body{font-family:var(--mono); font-size:11.5px; color:var(--ink-2); line-height:1.6;
+    white-space:pre-wrap; word-break:break-word; margin-top:4px;}
+  .tl-out{font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.55;
+    white-space:pre-wrap; word-break:break-word; margin-top:5px; padding:7px 9px;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:5px; max-height:220px; overflow:auto;}
+  .logbar{display:flex; align-items:center; gap:9px; flex-wrap:wrap; padding-bottom:12px;
+    margin-bottom:6px; border-bottom:1px solid var(--grid);}
+  .logbar .grow{flex:1;}
+
+  .foot{color:var(--muted); font-size:11.5px; text-align:center; padding:6px 0 2px;}
+  .foot a{color:var(--accent); text-decoration:none;}
+</style>
+
+<div class="dash">
+  <nav class="topnav">
+    <div class="topnav-in">
+      <div class="brand">
+        <span class="dot" id="livedot"></span>
+        <h1>Market Scanner</h1>
+      </div>
+      <div class="navtabs" id="navtabs">
+        <button class="navtab active" data-target="view-scan">스캔</button>
+        <button class="navtab" data-target="view-result">결과</button>
+        <button class="navtab" data-target="view-log">로그</button>
+      </div>
+      <div class="navsearch">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="tickersearch" placeholder="티커 검색...">
+      </div>
+      <button class="toggle" id="themebtn" type="button" aria-label="테마 전환">◐ 테마</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- ============= SCAN ============= -->
+    <section class="panel-view active" id="view-scan">
+      <div class="comparebar" id="comparebar" hidden>
+        <span class="cnt" id="comparecount"></span>
+        <span class="comparehint" id="comparehint"></span>
+        <button class="runbtn" id="comparebtn" type="button" disabled>선택 종목 비교</button>
+        <span class="runstatus" data-job="__compare__"></span>
+        <button class="clearbtn" id="clearselect" type="button" aria-label="선택 해제">✕</button>
+      </div>
+      <div class="chips" id="statuschips"></div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="cols">
+        <section class="panel">
+          <header><h2>섹터 분포</h2><span class="hint">후보 종목 기준</span></header>
+          <div class="barlist" id="sectorchart"></div>
+        </section>
+        <section class="panel">
+          <header><h2>주요 신호 빈도</h2><span class="hint">플래그 집계</span></header>
+          <div class="barlist" id="signalchart"></div>
+        </section>
+        <section class="panel">
+          <header><h2>종합점수 분포</h2><span class="hint" id="histhint"></span></header>
+          <div class="hist" id="hist"></div>
+          <div class="axis"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        </section>
+      </div>
+
+      <div class="carousel" id="carousel"></div>
+
+      <section class="table sweet">
+        <header><span class="stripe"></span><h2>SWEET SPOT — 저평가 &amp; 상승</h2><span class="count" id="c-sweet"></span></header>
+        <div class="stocklist" id="t-sweet"></div>
+      </section>
+      <div class="cols">
+        <section class="table value">
+          <header><span class="stripe"></span><h2>저평가 (UNDERVALUED)</h2><span class="count" id="c-value"></span></header>
+          <div class="stocklist" id="t-value"></div>
+        </section>
+        <section class="table up">
+          <header><span class="stripe"></span><h2>상승 (UPTREND)</h2><span class="count" id="c-up"></span></header>
+          <div class="stocklist" id="t-up"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============= RESULT ============= -->
+    <section class="panel-view" id="view-result">
+      <div class="resultgrid">
+        <div class="panel report" id="reportpane"></div>
+        <div class="panel" style="padding:0;">
+          <h3 style="padding:16px 17px 0;">분석 세션 (History)</h3>
+          <div class="hist-list" id="histlist"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============= LOG ============= -->
+    <section class="panel-view" id="view-log">
+      <div class="resultgrid">
+        <div class="panel" id="logpane"></div>
+        <div class="panel" style="padding:0;">
+          <h3 style="padding:16px 17px 0;">분석 세션</h3>
+          <div class="hist-list" id="loglist"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<script>
+window.__DASHBOARD__ = /*__DATA__*/ null;
+(function(){
+  const d = window.__DASHBOARD__ || {};
+  const scan = d.scan || {};
+  const decisions = d.decisions || []; // most-recent-first list of journal "decision" entries
+  const sessions = d.sessions || []; // most-recent-first list of saved analysis sessions (full reports)
+  const $ = s => document.querySelector(s);
+  const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+  const isTrap = e => (e.flags||[]).some(f=>/negative margins/i.test(f));
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---- theme toggle ----
+  const themebtn = $('#themebtn');
+  const curTheme = () => document.documentElement.getAttribute('data-theme')
+     || (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  themebtn.onclick = ()=>document.documentElement.setAttribute('data-theme', curTheme()==='dark'?'light':'dark');
+
+  // ---- tab switching ----
+  const navtabs = document.querySelectorAll('.navtab');
+  const views = document.querySelectorAll('.panel-view');
+  function activateTab(targetId){
+    navtabs.forEach(b=>b.classList.toggle('active', b.dataset.target===targetId));
+    views.forEach(v=>v.classList.toggle('active', v.id===targetId));
+  }
+  navtabs.forEach(btn=>btn.addEventListener('click', ()=>activateTab(btn.dataset.target)));
+
+  // ---- status chips ----
+  const cov = scan.coverage || {};
+  const covChips = Object.keys(cov).map(k=>{
+    const n = cov[k];
+    return `<span class="chip ${n?'':'off'}">${esc(k)} <b>${n||0}</b></span>`;
+  }).join('');
+  $('#statuschips').innerHTML =
+    `<span class="chip">스캔 <b>${esc(scan.date||'—')}</b></span>` +
+    `<span class="chip">종목 <b>${scan.scored||0}</b>/<b>${scan.scanned||0}</b></span>` +
+    (scan.errors?`<span class="chip">스킵 <b>${scan.errors}</b></span>`:'') + covChips;
+
+  // ---- live dot ----
+  const dot = $('#livedot');
+  if(d.live){ dot.classList.add('live'); dot.title='실시간(자동 새로고침)'; }
+  else { dot.title='정적 스냅샷'; }
+
+  // ---- KPIs ----
+  const uniq = {};
+  [].concat(scan.value_and_momentum||[], scan.undervalued||[], scan.uptrend||[])
+    .forEach(e=>{ uniq[e.ticker]=e; });
+  const traps = Object.values(uniq).filter(isTrap).length;
+  const comps = scan.composites || [];
+  const avg = comps.length ? (comps.reduce((a,b)=>a+b,0)/comps.length) : null;
+  const j = d.journal||{};
+  const tiles = [
+    ['유니버스', (scan.universe_size||0), (scan.indices||[]).join(' · '), ''],
+    ['SWEET SPOT', (scan.value_and_momentum||[]).length, '저평가 & 상승', 'accent'],
+    ['저평가', (scan.undervalued||[]).length, 'cheap + quality', 'aqua'],
+    ['상승', (scan.uptrend||[]).length, 'momentum + growth', 'violet'],
+    ['평균 종합점수', avg==null?'—':avg.toFixed(1), '스캔 전체', ''],
+    ['밸류트랩 경고', traps, '적자기업 후보', traps?'crit':''],
+  ];
+  if(j && j.reviewed){
+    tiles.push(['적중률', (j.hit_rate_pct==null?'—':j.hit_rate_pct+'%'), `리뷰 ${j.reviewed}건`, 'good']);
+    tiles.push(['평균 알파', (j.avg_alpha_pct==null?'—':(j.avg_alpha_pct>0?'+':'')+j.avg_alpha_pct+'%'), 'vs SPY', j.avg_alpha_pct>0?'good':'crit']);
+  }
+  $('#kpis').innerHTML = tiles.map(([k,v,cap,cls])=>
+    `<div class="tile ${cls}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="cap">${esc(cap)}</span></div>`).join('');
+
+  // ---- horizontal bar list ----
+  function barlist(node, rows){
+    node.innerHTML='';
+    if(!rows.length){ node.appendChild(el('div','empty','데이터 없음 (라이브 스캔에서 채워집니다)')); return; }
+    const max = Math.max(...rows.map(r=>r[1]));
+    rows.forEach(([lab,v])=>{
+      const row=el('div','barrow');
+      row.innerHTML=`<span class="lab" title="${esc(lab)}">${esc(lab)}</span>`+
+        `<span class="track"><span class="fill" style="width:${max?Math.max(3,v/max*100):0}%"></span></span>`+
+        `<span class="val">${v}</span>`;
+      node.appendChild(row);
+    });
+  }
+  const sect={};
+  Object.values(uniq).forEach(e=>{ const s=(e.metrics||{}).sector; if(s) sect[s]=(sect[s]||0)+1; });
+  barlist($('#sectorchart'), Object.entries(sect).sort((a,b)=>b[1]-a[1]).slice(0,8));
+
+  const FLAG_LABELS = [
+    [/golden/i, '골든크로스'], [/above 200/i, '200일선 위'], [/below 200/i, '200일선 아래'],
+    [/forward p\/e/i, '포워드 P/E 개선'], [/low p\/e/i, '저 P/E'], [/peg/i, 'PEG < 1'],
+    [/negative margins/i, '적자마진'], [/52w high/i, '52주 신고가 근접'], [/52w low/i, '52주 신저가 근접'],
+    [/roe/i, '고 ROE'], [/revenue/i, '매출 성장'], [/earnings/i, '이익 성장'], [/leverage/i, '고레버리지'],
+  ];
+  const normFlag = f => { const hit = FLAG_LABELS.find(([re])=>re.test(f)); return hit ? hit[1] : null; };
+  const sig={};
+  Object.values(uniq).forEach(e=>(e.flags||[]).forEach(f=>{const n=normFlag(f); if(n) sig[n]=(sig[n]||0)+1;}));
+  barlist($('#signalchart'), Object.entries(sig).sort((a,b)=>b[1]-a[1]).slice(0,9));
+
+  // ---- histogram of composites (click a bar to filter the ranking tables) ----
+  const bins=new Array(20).fill(0);
+  comps.forEach(c=>{ let i=Math.min(19,Math.max(0,Math.floor(c/5))); bins[i]++; });
+  const hmax=Math.max(1,...bins);
+  $('#hist').innerHTML = bins.map((n,i)=>{
+    const lo=i*5, hi=lo+5;
+    return `<div class="col" data-lo="${lo}" data-hi="${hi}" title="${lo}–${hi}점: ${n}종목"><div class="bar ${n?'':'dim'}" style="height:${n/hmax*100}%"></div></div>`;
+  }).join('');
+  const histCount = comps.length;
+  $('#histhint').textContent = histCount ? `n=${histCount}` : '';
+
+  // ---- combined row filters: ticker search + histogram score-bin click ----
+  const tickerComposite = {};
+  Object.values(uniq).forEach(e=>{ tickerComposite[e.ticker] = e.composite; });
+  let activeScoreBin = null; // [lo, hi) or null
+  function applyRowFilters(){
+    const q = ($('#tickersearch').value||'').trim().toUpperCase();
+    document.querySelectorAll('.stockrow').forEach(row=>{
+      const tkr = row.querySelector('.tkr').textContent.toUpperCase();
+      const passSearch = !q || tkr.includes(q);
+      const c = tickerComposite[tkr];
+      const passBin = !activeScoreBin || (c!=null && c>=activeScoreBin[0] && c<activeScoreBin[1]);
+      row.style.display = (passSearch && passBin) ? '' : 'none';
+    });
+  }
+  function setScoreBin(bin){
+    activeScoreBin = bin;
+    const histEl = $('#hist');
+    histEl.classList.toggle('filtering', !!bin);
+    histEl.querySelectorAll('.col').forEach(c=>c.classList.toggle('active', !!bin && Number(c.dataset.lo)===bin[0]));
+    const hintEl = $('#histhint');
+    hintEl.textContent = bin ? `${bin[0]}–${bin[1]}점만 표시 중 · 배경 클릭 시 해제` : (histCount ? `n=${histCount}` : '');
+    hintEl.classList.toggle('filter-active', !!bin);
+    applyRowFilters();
+  }
+  document.addEventListener('click', (e)=>{
+    const col = e.target.closest('#hist .col');
+    if(col){ setScoreBin([Number(col.dataset.lo), Number(col.dataset.hi)]); return; }
+    if(activeScoreBin) setScoreBin(null);
+  });
+
+  // ---- decisions: latest entry per ticker, keyed ----
+  const latestByTicker = {};
+  decisions.forEach(dec=>{ // list is most-recent-first
+    if(!latestByTicker[dec.ticker]) latestByTicker[dec.ticker] = dec;
+  });
+
+  function badgeHTML(dec, conv){
+    const map = {BUY:['buy','BUY'], SELL:['sell','SELL'], HOLD:['hold','HOLD']};
+    const [cls,lab] = map[dec] || ['hold', esc(dec)];
+    const levels = {Low:1, Medium:2, 'Medium-High':2, High:3};
+    const n = levels[conv] ?? (conv ? 2 : 0);
+    const dots = n ? `<span class="conv" title="확신도: ${esc(conv)}">${[0,1,2].map(i=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>` : '';
+    return `<span class="badge ${cls}">${lab}${dots}</span>`;
+  }
+
+  // ---- one-line summary: journal note if analyzed, else synthesized from flags ----
+  function truncate(s, n){ s = s || ''; return s.length > n ? s.slice(0, n-1).trimEnd()+'…' : s; }
+  function summaryFor(e, entry){
+    // Sector already shown in its own column — don't repeat it here.
+    if(entry && entry.note) return truncate(entry.note, 100);
+    const labels = (e.flags||[]).map(normFlag).filter(Boolean).slice(0,3);
+    if(labels.length) return labels.join(' · ');
+    return `종합점수 ${e.composite}점 — 분석 대기`;
+  }
+
+  function flagChips(e){
+    const isTrapFlag=f=>/negative margins|high leverage/i.test(f);
+    const isGood=f=>/golden|above 200|peg|low p\/e|roe|forward p\/e|revenue|earnings|52w high/i.test(f);
+    return `<span class="flags">`+(e.flags||[]).slice(0,6).map(f=>{
+      const t=isTrapFlag(f); return `<span class="flag ${t?'crit':(isGood(f)?'good':'')}">${esc(f)}</span>`;
+    }).join('')+`</span>`;
+  }
+
+  // ---- trigger wiring: POST /api/analyze|/api/compare, poll status, reload on completion ----
+  // Progress state lives keyed by a job key (ticker for single, '__compare__' for the
+  // selection bar) — not by DOM-node closure — and a single interval re-scans + repaints
+  // every live status element each second. Since the accordion only ever toggles a CSS
+  // class (grid-template-rows 0fr/1fr) and never re-renders the row, the status node
+  // stays in the DOM and keeps updating whether the row is open or closed — reopening it
+  // just reveals the current text.
+  const liveMode = !!d.live;
+  // jobKey -> { startedAt, stageIndex, stageTotal, stageLabel, agentsDone, agentsTotal }
+  const runningJobs = {};
+  function formatElapsed(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    if(s < 60) return `${s}초`;
+    return `${Math.floor(s/60)}분 ${s%60}초`;
+  }
+  function paintRunning(jobKey){
+    const job = runningJobs[jobKey];
+    if(!job) return;
+    const stageIdx = job.stageIndex || 1, stageTot = job.stageTotal || 4;
+    const stageLabel = job.stageLabel || '요청 접수';
+    const agentsTxt = (stageIdx===2 && job.agentsTotal) ? ` (${job.agentsDone||0}/${job.agentsTotal} 완료)` : '';
+    const txt = `${stageIdx}/${stageTot}단계 · ${stageLabel}${agentsTxt} · ${formatElapsed(Date.now()-job.startedAt)} 경과`;
+    document.querySelectorAll(`.runstatus[data-job="${jobKey}"]`).forEach(el=>{
+      el.classList.remove('err');
+      el.innerHTML = `<span class="pulse"></span><span class="txt">${esc(txt)}</span>`;
+    });
+  }
+  setInterval(()=>{ Object.keys(runningJobs).forEach(paintRunning); }, 1000);
+
+  function runJob(jobKey, btn, opts){
+    btn.disabled = true;
+    runningJobs[jobKey] = { startedAt: Date.now(), stageIndex:1, stageTotal:4, stageLabel:'요청 접수' };
+    paintRunning(jobKey);
+    let statusUrl = null;
+    fetch(opts.startUrl, {method:'POST'})
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.status==='error') throw new Error(res.error||'요청 실패');
+        if(res.started_at) runningJobs[jobKey].startedAt = new Date(res.started_at).getTime();
+        statusUrl = opts.statusUrl(res);
+        paintRunning(jobKey);
+        poll();
+      })
+      .catch((err)=>{
+        delete runningJobs[jobKey];
+        document.querySelectorAll(`.runstatus[data-job="${jobKey}"]`).forEach(el=>{ el.classList.add('err'); el.textContent='오류: '+(err&&err.message||'요청 실패'); });
+        btn.disabled=false;
+      });
+    function poll(){
+      fetch(statusUrl)
+        .then(r=>r.json())
+        .then(s=>{
+          if(s.status==='done'){
+            delete runningJobs[jobKey];
+            document.querySelectorAll(`.runstatus[data-job="${jobKey}"]`).forEach(el=>{ el.innerHTML='완료 — 새로고침 중…'; });
+            location.reload();
+          } else if(s.status==='error'){
+            delete runningJobs[jobKey];
+            document.querySelectorAll(`.runstatus[data-job="${jobKey}"]`).forEach(el=>{ el.classList.add('err'); el.textContent='오류: '+(s.error||'분석 실패'); });
+            btn.disabled=false;
+          } else {
+            const job = runningJobs[jobKey];
+            if(job){
+              job.stageIndex = s.stage_index || job.stageIndex;
+              job.stageTotal = s.stage_total || job.stageTotal;
+              job.stageLabel = s.stage_label || job.stageLabel;
+              job.agentsDone = s.agents_done;
+              job.agentsTotal = s.agents_total;
+              paintRunning(jobKey);
+            }
+            setTimeout(poll, 4000);
+          }
+        })
+        .catch(()=>setTimeout(poll, 6000));
+    }
+  }
+
+  function runAnalysis(ticker, btn){
+    runJob(ticker, btn, {
+      startUrl: `/api/analyze?ticker=${encodeURIComponent(ticker)}`,
+      statusUrl: () => `/api/status?ticker=${encodeURIComponent(ticker)}`,
+    });
+  }
+
+  // ---- multi-select + compare trigger ----
+  const selectedTickers = new Set();
+  function toggleTickerSelection(ticker, checked){
+    if(checked) selectedTickers.add(ticker); else selectedTickers.delete(ticker);
+    document.querySelectorAll(`.rowcheck[data-ticker="${ticker}"]`).forEach(cb=>{ cb.checked = checked; });
+    updateCompareBar();
+  }
+  function updateCompareBar(){
+    const n = selectedTickers.size;
+    const bar = $('#comparebar');
+    bar.hidden = n === 0;
+    $('#comparecount').textContent = `${n}개 선택됨`;
+    $('#comparebtn').disabled = n < 2 || n > 6 || !liveMode;
+    $('#comparehint').textContent = n > 6 ? '최대 6개까지 선택 가능'
+      : (n===1 ? '2개 이상 선택해줘' : (!liveMode ? '라이브 서버에서만 가능' : ''));
+  }
+  $('#clearselect').addEventListener('click', ()=>{
+    [...selectedTickers].forEach(t=>toggleTickerSelection(t, false));
+  });
+  $('#comparebtn').addEventListener('click', (e)=>{
+    if(e.currentTarget.disabled) return;
+    const tickers = [...selectedTickers];
+    runJob('__compare__', e.currentTarget, {
+      startUrl: `/api/compare?tickers=${encodeURIComponent(tickers.join(','))}`,
+      statusUrl: (res) => `/api/session/${encodeURIComponent(res.session_id)}/status`,
+    });
+  });
+
+  // ---- external chart link ----
+  // The scan payload carries snapshot metrics only (no OHLC series), so charts
+  // are delegated to an external provider rather than drawn here — that also
+  // keeps this file self-contained/offline-openable. Swap CHART_PROVIDER to
+  // change where "차트 보기" goes; {t} is the ticker.
+  const CHART_PROVIDERS = {
+    tradingview: {label:'TradingView', url:'https://www.tradingview.com/symbols/{t}/'},
+    finviz:      {label:'Finviz',      url:'https://finviz.com/quote.ashx?t={t}&p=d'},
+    yahoo:       {label:'Yahoo',       url:'https://finance.yahoo.com/chart/{t}'},
+  };
+  const CHART_PROVIDER = 'tradingview';
+  function chartLinkHTML(ticker){
+    const p = CHART_PROVIDERS[CHART_PROVIDER];
+    const url = p.url.replace('{t}', encodeURIComponent(ticker));
+    return `<a class="chartlink" href="${esc(url)}" target="_blank" rel="noopener noreferrer" `+
+           `title="${esc(ticker)} 차트를 ${esc(p.label)}에서 열기 (새 탭)">`+
+           `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" `+
+           `stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/>`+
+           `<polyline points="15 7 21 7 21 13"/></svg>차트 보기</a>`;
+  }
+
+  // ---- accordion stock rows ----
+  function renderRows(nodeId, rows){
+    const node = $(nodeId);
+    if(!rows || !rows.length){ node.innerHTML = `<div class="empty">이 배치에는 해당 후보가 없습니다</div>`; return; }
+    node.innerHTML = rows.map((e,i)=>{
+      const entry = latestByTicker[e.ticker];
+      const trap = isTrap(e);
+      const sector = (e.metrics||{}).sector || '';
+      const badge = entry ? badgeHTML(entry.decision, entry.conviction) : `<span class="chip-neutral">미분석</span>`;
+      const summary = summaryFor(e, entry);
+      const factors = [['Value',e.valuation],['Momentum',e.momentum],['Quality',e.quality],['Growth',e.growth]];
+      const colorFor = v => v>=75?'var(--good)':(v>=45?'var(--accent)':'var(--muted)');
+      const factorHTML = `<div class="factorgrid">`+factors.map(([lab,v])=>
+        `<div class="f"><div class="lab">${lab}<b>${Math.round(v)}</b></div><div class="mt"><div class="mtf" style="width:${Math.max(2,v)}%;background:${colorFor(v)}"></div></div></div>`
+      ).join('')+`</div>`;
+      const chart = chartLinkHTML(e.ticker);
+      const sessIdx = sessions.findIndex(s=>s.status==='done' && (s.tickers||[]).includes(e.ticker));
+      const golink = sessIdx>=0 ? `<button class="golink" data-goto-session="${sessIdx}">전체 리포트 보기 →</button>` : '';
+      const noteBlock = entry
+        ? `<p class="note">${esc(entry.note||'')}</p><div class="runrow"><span class="datechip mono">${esc(entry.date||'')} 기록</span>`+
+          `<button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled'}>다시 분석</button>${chart}<span class="runstatus" data-job="${esc(e.ticker)}"></span></div>${golink}`
+        : `${flagChips(e)}<div class="runrow"><button class="runbtn" data-ticker="${esc(e.ticker)}" ${liveMode?'':'disabled title="라이브 서버(--serve)에서만 가능"'}>분석 실행</button>${chart}<span class="runstatus" data-job="${esc(e.ticker)}"></span></div>`;
+      return `<div class="stockrow" data-idx="${i}">`+
+        `<div class="stockrow-main" role="button" tabindex="0" aria-expanded="false">`+
+          `<input type="checkbox" class="rowcheck" data-ticker="${esc(e.ticker)}" aria-label="${esc(e.ticker)} 비교 선택" ${selectedTickers.has(e.ticker)?'checked':''}>`+
+          `<span class="tkr">${esc(e.ticker)}</span>`+
+          `<span class="sect-tag">${esc(sector)}</span>`+
+          `<span class="summary" title="${esc(summary)}">${trap?'⚠ ':''}${esc(summary)}</span>`+
+          badge+
+          `<span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`+
+        `</div>`+
+        `<div class="stockrow-detail-wrap"><div class="stockrow-detail"><div class="stockrow-detail-in">`+
+          factorHTML + noteBlock +
+        `</div></div></div>`+
+      `</div>`;
+    }).join('');
+  }
+  renderRows('#t-sweet', scan.value_and_momentum);
+  renderRows('#t-value', scan.undervalued);
+  renderRows('#t-up', scan.uptrend);
+  $('#c-sweet').textContent = (scan.value_and_momentum||[]).length+'종목';
+  $('#c-value').textContent = (scan.undervalued||[]).length+'종목';
+  $('#c-up').textContent = (scan.uptrend||[]).length+'종목';
+
+  // expand/collapse + run-analysis + checkbox + golink clicks (delegated across all three tables)
+  document.querySelectorAll('.stocklist').forEach(list=>{
+    list.addEventListener('click', (e)=>{
+      const check = e.target.closest('.rowcheck');
+      if(check){
+        toggleTickerSelection(check.dataset.ticker, check.checked);
+        return;
+      }
+      const golink = e.target.closest('[data-goto-session]');
+      if(golink){
+        activateTab('view-result');
+        selectSession(Number(golink.dataset.gotoSession));
+        return;
+      }
+      const runbtn = e.target.closest('.runbtn');
+      if(runbtn){
+        if(runbtn.disabled) return;
+        runAnalysis(runbtn.dataset.ticker, runbtn);
+        return;
+      }
+      const main = e.target.closest('.stockrow-main');
+      if(!main) return;
+      const row = main.closest('.stockrow');
+      const isOpen = row.classList.toggle('open');
+      main.setAttribute('aria-expanded', String(isOpen));
+    });
+    list.addEventListener('keydown', (e)=>{
+      if(e.key!=='Enter' && e.key!==' ') return;
+      const main = e.target.closest('.stockrow-main');
+      if(!main) return;
+      e.preventDefault();
+      main.click();
+    });
+  });
+
+  // ---- ticker carousel: top 3 sweet-spot picks by composite ----
+  const topPicks = (scan.value_and_momentum||[]).slice().sort((a,b)=>b.composite-a.composite).slice(0,3);
+  $('#carousel').innerHTML = topPicks.map(e=>{
+    const entry = latestByTicker[e.ticker];
+    const badge = entry ? badgeHTML(entry.decision, entry.conviction) : `<span class="chip-neutral">미분석</span>`;
+    return `<div class="tcard"><div class="row1"><div><span class="tk">${esc(e.ticker)}</span><span class="sect">${esc((e.metrics||{}).sector||'')}</span></div>${badge}</div>`+
+      `<div class="sc"><span>종합점수</span><span class="mono">${e.composite}</span></div></div>`;
+  }).join('');
+
+  // ---- search filter (client-side, combined with histogram bin filter above) ----
+  $('#tickersearch').addEventListener('input', applyRowFilters);
+
+  // ---- minimal markdown -> HTML (headers, bold, code, hr, lists, pipe tables, paragraphs) ----
+  // Self-contained by design (no CDN markdown lib) — covers exactly what trade-decision
+  // reports use. Not a general-purpose renderer.
+  function renderMarkdown(md){
+    if(!md) return '';
+    const lines = String(md).replace(/\r\n/g,'\n').split('\n');
+    const inlineMd = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');
+    let html = '', i = 0;
+    while(i < lines.length){
+      const line = lines[i];
+      if(/^\s*$/.test(line)){ i++; continue; }
+      let m = line.match(/^(#{1,4})\s+(.*)$/);
+      if(m){ const lvl = Math.min(4, m[1].length)+1; html += `<h${lvl}>${inlineMd(m[2])}</h${lvl}>`; i++; continue; }
+      if(/^-{3,}\s*$/.test(line)){ html += '<hr>'; i++; continue; }
+      if(/^\|.*\|\s*$/.test(line) && lines[i+1] && /^\|?[\s:|-]+\|?\s*$/.test(lines[i+1])){
+        const headCells = line.split('|').slice(1,-1).map(c=>c.trim());
+        let j = i+2, rows = [];
+        while(j < lines.length && /^\|.*\|\s*$/.test(lines[j])){ rows.push(lines[j]); j++; }
+        html += '<div class="mdtable-wrap"><table><thead><tr>'+headCells.map(c=>`<th>${inlineMd(c)}</th>`).join('')+'</tr></thead><tbody>'+
+          rows.map(r=>'<tr>'+r.split('|').slice(1,-1).map(c=>`<td>${inlineMd(c.trim())}</td>`).join('')+'</tr>').join('')+
+          '</tbody></table></div>';
+        i = j; continue;
+      }
+      if(/^[-*]\s+/.test(line)){
+        let items = [];
+        while(i < lines.length && /^[-*]\s+/.test(lines[i])){ items.push(lines[i].replace(/^[-*]\s+/,'')); i++; }
+        html += '<ul>'+items.map(it=>`<li>${inlineMd(it)}</li>`).join('')+'</ul>';
+        continue;
+      }
+      if(/^\d+\.\s+/.test(line)){
+        let items = [];
+        while(i < lines.length && /^\d+\.\s+/.test(lines[i])){ items.push(lines[i].replace(/^\d+\.\s+/,'')); i++; }
+        html += '<ol>'+items.map(it=>`<li>${inlineMd(it)}</li>`).join('')+'</ol>';
+        continue;
+      }
+      let para = [line]; i++;
+      while(i < lines.length && !/^\s*$/.test(lines[i]) && !/^#{1,4}\s/.test(lines[i]) && !/^[-*]\s/.test(lines[i])
+            && !/^\d+\.\s/.test(lines[i]) && !/^\|.*\|\s*$/.test(lines[i]) && !/^-{3,}\s*$/.test(lines[i])){
+        para.push(lines[i]); i++;
+      }
+      html += `<p>${para.map(inlineMd).join('<br>')}</p>`;
+    }
+    return html;
+  }
+
+  // ---- Result tab: session history + full-report viewer ----
+  function sessionTitle(s){
+    return s.type === 'compare' ? (s.tickers||[]).join(', ')+' 비교분석' : ((s.tickers||[])[0]||'?') + ' 단독 분석';
+  }
+  function sessionBadgesHTML(s){
+    return (s.tickers||[]).map(t=>{
+      const dec = (s.decisions||{})[t];
+      return dec && dec.decision ? badgeHTML(dec.decision, dec.conviction) : `<span class="chip-neutral">${esc(t)}</span>`;
+    }).join('');
+  }
+  function renderReport(session){
+    const pane = $('#reportpane');
+    if(!session){
+      pane.innerHTML = `<div class="empty">아직 기록된 분석이 없습니다. 스캔 탭에서 종목을 분석해 보세요.</div>`;
+      return;
+    }
+    if(session.status !== 'done'){
+      const statusTxt = session.status==='error' ? '오류: '+esc(session.error||'분석 실패') : '분석 진행 중입니다 — 완료되면 이 화면이 자동으로 갱신됩니다.';
+      pane.innerHTML = `<div class="rhead"><div><h2>${esc(sessionTitle(session))}</h2><div class="meta">${esc(session.status)}</div></div></div>`+
+        `<p>${statusTxt}</p>`;
+      return;
+    }
+    pane.innerHTML =
+      `<div class="rhead"><div><h2>${esc(sessionTitle(session))}</h2><div class="meta">${esc((session.completed_at||'').replace('T',' '))} 완료</div></div>`+
+      `<div class="side">${sessionBadgesHTML(session)}</div></div>`+
+      `<div class="md">${renderMarkdown(session.report_markdown) || '<p>(리포트 본문이 없습니다)</p>'}</div>`;
+  }
+  function selectSession(idx){
+    document.querySelectorAll('#histlist .hist-item').forEach(x=>x.classList.remove('sel'));
+    const item = document.querySelector(`#histlist .hist-item[data-idx="${idx}"]`);
+    if(item) item.classList.add('sel');
+    renderReport(sessions[idx]);
+  }
+  function sessionPreview(s){
+    if(s.status !== 'done') return s.status==='error' ? '오류 발생' : '진행 중…';
+    return (s.report_markdown||'').replace(/[#*`|>-]/g,' ').replace(/\s+/g,' ').trim().slice(0,90);
+  }
+  $('#histlist').innerHTML = sessions.length
+    ? sessions.map((s,i)=>
+        `<div class="hist-item ${i===0?'sel':''}" data-idx="${i}"><span class="time mono">${esc((s.completed_at||s.requested_at||'').replace('T',' '))}</span>`+
+        `<span class="ttl">${esc(sessionTitle(s))}</span><span class="desc">${esc(sessionPreview(s))}</span></div>`).join('')
+    : `<div class="empty">저장된 분석 세션이 없습니다. 스캔 탭에서 종목을 분석하면 여기 쌓입니다.</div>`;
+  $('#histlist').addEventListener('click', (e)=>{
+    const item = e.target.closest('.hist-item');
+    if(!item) return;
+    selectSession(Number(item.dataset.idx));
+  });
+  renderReport(sessions[0]);
+
+  // ---- Log tab: execution timeline per session ----
+  // Transcripts are megabytes of raw stream-json, so they are never inlined into
+  // the page — the server distils one into a timeline and we fetch it on demand.
+  const KIND_LABEL = {prompt:'프롬프트', text:'메시지', tool:'도구 호출', result:'최종 응답'};
+  let logSessionIdx = -1;
+
+  function timelineHTML(events){
+    if(!events.length) return `<div class="empty">이 세션에는 기록된 이벤트가 없습니다.</div>`;
+    return `<div class="timeline">`+events.map(ev=>{
+      const time = (ev.ts||'').split('T')[1] || '';
+      const st = ev.status;
+      const statusTxt = st==='ok' ? '완료' : st==='error' ? '실패' : st==='running' ? '실행 중' : st==='unknown' ? '결과 없음' : '';
+      return `<div class="tl-item k-${esc(ev.kind)}">`+
+        `<div class="tl-time">${esc(time)}</div>`+
+        `<div><div class="tl-head"><span class="tl-kind">${esc(KIND_LABEL[ev.kind]||ev.kind)}</span>`+
+          `<span class="tl-name">${esc(ev.title||'')}</span>`+
+          (statusTxt?`<span class="tl-status ${st==='error'?'err':''}">${esc(statusTxt)}</span>`:'')+
+        `</div>`+
+        (ev.body?`<div class="tl-body">${esc(ev.body)}</div>`:'')+
+        (ev.result?`<div class="tl-out">${esc(ev.result)}</div>`:'')+
+      `</div></div>`;
+    }).join('')+`</div>`;
+  }
+
+  async function loadLog(idx){
+    const s = sessions[idx];
+    logSessionIdx = idx;
+    document.querySelectorAll('#loglist .hist-item').forEach(x=>x.classList.remove('sel'));
+    const item = document.querySelector(`#loglist .hist-item[data-idx="${idx}"]`);
+    if(item) item.classList.add('sel');
+    const pane = $('#logpane');
+    if(!s){ pane.innerHTML = `<div class="empty">저장된 분석 세션이 없습니다.</div>`; return; }
+    const head = `<div class="logbar"><b style="font-size:14px;">${esc(sessionTitle(s))}</b>`+
+      `<span class="mono" style="font-size:11px; color:var(--muted);">${esc(s.id||'')}</span>`+
+      `<span class="grow"></span>${sessionBadgesHTML(s)}</div>`;
+    if(!liveMode){
+      pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--muted);">`+
+        `실행 로그는 라이브 서버(<span class="mono">--serve</span>)에서만 조회할 수 있습니다 — `+
+        `정적으로 저장된 HTML에는 트랜스크립트가 포함되지 않습니다.</p>`;
+      return;
+    }
+    pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--muted);">로그를 불러오는 중…</p>`;
+    try{
+      const res = await fetch(`/api/session/${encodeURIComponent(s.id)}/log`);
+      if(!res.ok) throw new Error(res.status===404 ? '이 세션에는 저장된 트랜스크립트가 없습니다 (로그 기능 도입 이전 세션)' : `HTTP ${res.status}`);
+      const data = await res.json();
+      if(logSessionIdx !== idx) return;   // user switched sessions while fetching
+      pane.innerHTML = head + timelineHTML(data.events||[]);
+    }catch(err){
+      if(logSessionIdx !== idx) return;
+      pane.innerHTML = head + `<p style="font-size:12.5px; color:var(--bad);">${esc(err.message||String(err))}</p>`;
+    }
+  }
+
+  $('#loglist').innerHTML = sessions.length
+    ? sessions.map((s,i)=>
+        `<div class="hist-item" data-idx="${i}"><span class="time mono">${esc((s.completed_at||s.requested_at||'').replace('T',' '))}</span>`+
+        `<span class="ttl">${esc(sessionTitle(s))}</span><span class="desc">${esc(s.status||'')}</span></div>`).join('')
+    : `<div class="empty">저장된 분석 세션이 없습니다.</div>`;
+  $('#loglist').addEventListener('click', (e)=>{
+    const item = e.target.closest('.hist-item');
+    if(item) loadLog(Number(item.dataset.idx));
+  });
+  if(sessions.length) loadLog(0); else loadLog(-1);
+
+  // ---- footer + auto-refresh ----
+  $('#foot').innerHTML = `생성 ${esc(d.generated_at||'—')} · 의사결정 지원용이며 투자자문이 아닙니다`+
+     (d.live?` · ${d.refresh_seconds||60}초마다 자동 새로고침`:'');
+  // Auto-refresh only while the scan tab is showing and nothing is running —
+  // a reload mid-analysis would drop the progress state, and reloading out from
+  // under someone reading a report or a log is worse than being a minute stale.
+  if(d.live && d.refresh_seconds){
+    const tick = ()=>{
+      const busy = Object.keys(runningJobs).length > 0;
+      const onScan = document.querySelector('#view-scan').classList.contains('active');
+      if(!busy && onScan) location.reload();
+      else setTimeout(tick, d.refresh_seconds*1000);
+    };
+    setTimeout(tick, d.refresh_seconds*1000);
+  }
+})();
+</script>

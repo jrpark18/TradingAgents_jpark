@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EQUITY.OS — Dashboard Concept (Revised)</title>
+<style>
+  /* =========================================================================
+     TOKENS — identical to data/dashboard/design requirements define.html.
+     No CDN, no Material Design 3 role layer, no separate light/dark exports:
+     one file, one toggle, [data-theme] attribute + prefers-color-scheme default.
+     ========================================================================= */
+  :root{
+    --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f2ee;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,.10); --track:#eae9e2;
+    --accent:#2a78d6; --aqua:#1baf7a; --violet:#4a3aa7;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(11,11,11,.05),0 8px 24px rgba(11,11,11,.06);
+  }
+  :root[data-theme="dark"]{
+    --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+    --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+    --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#222220;
+      --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --border:rgba(255,255,255,.10); --track:#26261f;
+      --accent:#3987e5; --aqua:#199e70; --violet:#9085e9;
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--plane); color:var(--ink);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:var(--mono); font-variant-numeric:tabular-nums;}
+  a{color:inherit;}
+  button{font:inherit; cursor:pointer;}
+  svg{display:block;}
+
+  /* ---- top nav ---- */
+  .topnav{position:sticky; top:0; z-index:50; background:var(--surface);
+    border-bottom:1px solid var(--border); box-shadow:var(--shadow);}
+  .topnav-in{max-width:1200px; margin:0 auto; padding:0 clamp(16px,3vw,32px);
+    height:56px; display:flex; align-items:center; gap:22px;}
+  .brand{font-size:16px; font-weight:750; letter-spacing:-.01em; color:var(--accent); white-space:nowrap;}
+  .navtabs{display:flex; gap:2px; height:100%;}
+  .navtab{height:100%; background:none; border:none; padding:0 12px; font-size:13px; font-weight:640;
+    color:var(--muted); position:relative; display:flex; align-items:center;}
+  .navtab:hover{color:var(--ink-2);}
+  .navtab.active{color:var(--ink);}
+  .navtab.active::after{content:""; position:absolute; left:8px; right:8px; bottom:0; height:2px;
+    background:var(--accent); border-radius:2px 2px 0 0;}
+  .navsearch{margin-left:auto; display:flex; align-items:center; gap:6px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:8px; padding:6px 10px; color:var(--muted); min-width:200px;}
+  .navsearch input{background:none; border:none; outline:none; color:var(--ink); font:inherit; font-size:12.5px; width:100%;}
+  .navsearch input::placeholder{color:var(--muted);}
+  .navicon{width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+    border-radius:8px; background:none; border:none; color:var(--ink-2);}
+  .navicon:hover{background:var(--surface-2); color:var(--ink);}
+  .avatar{width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+    border:1px solid var(--border);}
+  .navgroup{display:flex; align-items:center; gap:4px;}
+
+  .page{max-width:1200px; margin:0 auto; padding:24px clamp(16px,3vw,32px) 48px; display:flex; flex-direction:column; gap:24px;}
+
+  /* ---- tab panels: plain CSS, always wins, no framework race ---- */
+  .panel-view{display:none;}
+  .panel-view.active{display:flex; flex-direction:column; gap:20px;}
+
+  /* ---- KPI tiles (with micro-track, extends design_requirements_define.html spec) ---- */
+  .kpis{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:13px 15px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:6px;}
+  .tile .k{font-size:11px; color:var(--muted); letter-spacing:.03em; text-transform:uppercase;}
+  .tile .v{font-family:var(--mono); font-size:26px; font-weight:640; letter-spacing:-.02em;}
+  .tile.good .v{color:var(--good);} .tile.crit .v{color:var(--critical);} .tile.accent .v{color:var(--accent);}
+  .microtrack{height:4px; background:var(--track); border-radius:999px; overflow:hidden;}
+  .microfill{height:100%; border-radius:999px;}
+
+  /* ---- content grid: sector momentum + carousel/table ---- */
+  .scangrid{display:grid; grid-template-columns:280px 1fr; gap:14px; align-items:start;}
+  @media (max-width:860px){.scangrid{grid-template-columns:1fr;}}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px 17px; box-shadow:var(--shadow);}
+  .panel h3{margin:0 0 12px; font-size:14px; font-weight:650; display:flex; align-items:center; gap:7px;}
+  .panel h3 svg{color:var(--muted);}
+
+  .momrow{display:flex; flex-direction:column; gap:3px; margin-bottom:10px;}
+  .momrow:last-child{margin-bottom:0;}
+  .momrow .top{display:flex; justify-content:space-between; font-size:12.5px;}
+  .momrow .top .d{font-family:var(--mono); font-size:11px;}
+  .momrow .d.pos{color:var(--good);} .momrow .d.neg{color:var(--critical);} .momrow .d.flat{color:var(--muted);}
+
+  /* ---- ticker card carousel ---- */
+  .carousel{display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;}
+  .tcard{min-width:200px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:14px; display:flex; flex-direction:column; gap:10px; flex:0 0 auto;}
+  .tcard .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .tcard .tk{font-size:17px; font-weight:700;}
+  .tcard .sect{font-size:11px; color:var(--muted); display:block; margin-top:1px;}
+  .tcard .sc{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; color:var(--ink-2);}
+
+  /* ---- decision badge (shared: carousel, table, result header) ---- */
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:3px 9px 3px 8px;
+    border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.01em; white-space:nowrap;}
+  .badge .conv{display:inline-flex; gap:2px;}
+  .badge .conv i{width:4px; height:4px; border-radius:50%; background:currentColor; opacity:.3;}
+  .badge .conv i.on{opacity:1;}
+  .badge.buy{color:#fff; background:var(--good);}
+  .badge.sell{color:#fff; background:var(--critical);}
+  .badge.hold{color:var(--ink-2); background:var(--track); border:1px solid var(--border);}
+
+  /* ---- ranking table ---- */
+  .rtable{background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden;}
+  .rtable > header{display:flex; align-items:center; padding:14px 16px; border-bottom:1px solid var(--grid);}
+  .rtable h3{margin:0; font-size:14px; font-weight:650;}
+  .rtable .viewall{margin-left:auto; font-size:11.5px; color:var(--accent); font-weight:650; background:none; border:none;}
+  .tkr{font-family:var(--mono); font-weight:700; font-size:13px;}
+  .mt{height:5px; width:40px; background:var(--track); border-radius:999px; overflow:hidden;}
+  .mtf{height:100%; border-radius:999px;}
+
+  /* ---- stock row accordion: one-line summary, click to expand detail ----
+     Replaces bare V/M/Q/G bars as the primary read — a plain-language summary
+     line is the thing a user scans; the four factor scores are detail, shown
+     only on expand. */
+  .stocklist{display:flex; flex-direction:column;}
+  .stockrow{border-top:1px solid var(--grid);}
+  .stockrow:first-child{border-top:none;}
+  .stockrow-main{display:grid; grid-template-columns:64px 84px 1fr auto 16px; align-items:center;
+    gap:12px; padding:12px 16px; cursor:pointer; border-left:3px solid transparent;}
+  .stockrow-main:hover{background:var(--surface-2);}
+  .stockrow.open .stockrow-main{border-left-color:var(--accent); background:var(--surface-2);}
+  .stockrow-main .sect-tag{font-size:11px; color:var(--muted); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:2px 7px; white-space:nowrap; justify-self:start;}
+  .stockrow.open .stockrow-main .sect-tag{background:var(--surface);}
+  .stockrow-main .summary{font-size:12.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .stockrow-main .chev{color:var(--muted); transition:transform .15s ease; display:flex;}
+  .stockrow.open .stockrow-main .chev{transform:rotate(180deg); color:var(--ink-2);}
+  .stockrow-detail-wrap{display:grid; grid-template-rows:0fr; transition:grid-template-rows .18s ease;}
+  .stockrow.open .stockrow-detail-wrap{grid-template-rows:1fr;}
+  .stockrow-detail{overflow:hidden; min-height:0;}
+  .stockrow-detail-in{padding:2px 16px 16px 16px; display:flex; flex-direction:column; gap:12px;}
+  .factorgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .factorgrid .f .lab{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;
+    display:flex; justify-content:space-between; margin-bottom:4px;}
+  .factorgrid .f .lab b{font-family:var(--mono); color:var(--ink-2); font-weight:600;}
+  .factorgrid .f .mt{width:100%;}
+  .stockrow-detail ul{margin:0; padding-left:16px; font-size:12px; color:var(--ink-2); display:flex; flex-direction:column; gap:4px;}
+  .stockrow-detail .golink{font-size:11.5px; color:var(--accent); font-weight:650; background:none; border:none; padding:0; align-self:flex-start;}
+
+  /* ---- result tab layout ---- */
+  .resultgrid{display:grid; grid-template-columns:1fr 280px; gap:14px; align-items:start;}
+  @media (max-width:860px){.resultgrid{grid-template-columns:1fr;}}
+  .report{max-width:72ch;}
+  .report .rhead{display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+    padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--grid);}
+  .report .rhead h2{margin:0; font-size:22px; font-weight:700; display:flex; align-items:baseline; gap:10px;}
+  .report .rhead h2 small{font-size:13px; font-weight:500; color:var(--muted);}
+  .report .price{font-family:var(--mono); font-size:12.5px; color:var(--ink-2); margin-top:6px; display:flex; gap:10px;}
+  .report .price .delta.pos{color:var(--good);}
+  .report .rhead .side{display:flex; flex-direction:column; align-items:flex-end; gap:5px;}
+  .report .rhead .conviction-lab{font-size:10px; color:var(--muted);}
+  .report h4{font-size:14.5px; font-weight:650; margin:18px 0 8px;}
+  .report p{font-size:13px; color:var(--ink-2); margin:0 0 4px;}
+  .report ul{margin:0; padding-left:18px; font-size:13px; color:var(--ink-2); display:flex; flex-direction:column; gap:6px;}
+  .report ul b{color:var(--ink);}
+  .vctx{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-top:16px;
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .vctx .lab{font-family:var(--mono); font-size:11px; color:var(--ink-2); display:block; margin-bottom:5px;}
+
+  .hist-list{display:flex; flex-direction:column;}
+  .hist-item{display:flex; flex-direction:column; gap:2px; padding:10px 12px; cursor:pointer;
+    border-left:3px solid transparent; border-bottom:1px solid var(--grid);}
+  .hist-item:hover{background:var(--surface-2);}
+  .hist-item.sel{border-left-color:var(--accent); background:var(--surface-2);}
+  .hist-item .time{font-family:var(--mono); font-size:10px; color:var(--muted);}
+  .hist-item .ttl{font-size:12.5px; font-weight:650; margin-top:1px;}
+  .hist-item .desc{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  /* ---- log timeline ---- */
+  .tl{position:relative; padding-left:22px; max-width:760px;}
+  .tl::before{content:""; position:absolute; left:5px; top:4px; bottom:4px; width:1px; background:var(--grid);}
+  .tlrow{position:relative; padding:0 0 16px 12px;}
+  .tlrow:last-child{padding-bottom:0;}
+  .tlrow::before{content:""; position:absolute; left:-22px; top:3px; width:8px; height:8px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--surface);}
+  .tlrow.text::before{background:var(--muted);}
+  .tlrow.error::before{background:var(--critical);}
+  .tlrow .head{display:flex; align-items:baseline; gap:8px; font-size:12px;}
+  .tlrow .kind{font-weight:650;}
+  .tlrow .ts{font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+  .tlrow .body{margin-top:3px; font-size:12px; color:var(--ink-2);}
+  .tlrow .body code{font-family:var(--mono); font-size:11px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:6px; padding:1px 5px;}
+
+  .foot{color:var(--muted); font-size:11.5px; text-align:center; padding:6px 0 2px;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-in">
+    <span class="brand">EQUITY.OS</span>
+    <div class="navtabs" id="navtabs">
+      <button class="navtab active" data-target="view-scan">스캔</button>
+      <button class="navtab" data-target="view-result">결과</button>
+      <button class="navtab" data-target="view-log">로그</button>
+    </div>
+    <div class="navsearch">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="티커 검색...">
+    </div>
+    <div class="navgroup">
+      <button class="navicon" title="알림" aria-label="알림">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="navicon" title="설정" aria-label="설정" id="themebtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="avatar">JP</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ============= SCAN ============= -->
+  <section class="panel-view active" id="view-scan">
+    <div class="kpis">
+      <div class="tile"><span class="k">유니버스</span><span class="v">503</span>
+        <div class="microtrack"><div class="microfill" style="width:100%;background:var(--muted)"></div></div></div>
+      <div class="tile accent"><span class="k">SWEET SPOT</span><span class="v">12</span>
+        <div class="microtrack"><div class="microfill" style="width:8%;background:var(--accent)"></div></div></div>
+      <div class="tile good"><span class="k">적중률</span><span class="v">64%</span>
+        <div class="microtrack"><div class="microfill" style="width:64%;background:var(--good)"></div></div></div>
+      <div class="tile crit"><span class="k">경고</span><span class="v">3</span>
+        <div class="microtrack"><div class="microfill" style="width:15%;background:var(--serious)"></div></div></div>
+    </div>
+
+    <div class="scangrid">
+      <div class="panel">
+        <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>섹터 모멘텀</h3>
+        <div id="sectormom"></div>
+      </div>
+
+      <div>
+        <div class="carousel" id="carousel"></div>
+        <div class="rtable">
+          <header><h3>Sweet Spot Ranking</h3><button class="viewall">전체 보기</button></header>
+          <div class="stocklist" id="stocklist"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= RESULT ============= -->
+  <section class="panel-view" id="view-result">
+    <div class="resultgrid">
+      <div class="panel report">
+        <div class="rhead">
+          <div>
+            <h2>HIG <small>Hartford Financial Services Group Inc.</small></h2>
+            <div class="price mono"><span>$94.21</span><span class="delta pos">+1.24 (1.3%)</span></div>
+          </div>
+          <div class="side">
+            <span class="badge buy">BUY<span class="conv" title="확신도: Medium-High"><i class="on"></i><i class="on"></i><i></i></span></span>
+            <span class="conviction-lab">확신도: Medium-High</span>
+          </div>
+        </div>
+
+        <h4>투자 논지</h4>
+        <p>HIG는 P&amp;C 보험 섹터에서 매력적인 밸류 프로포지션을 제공한다. 최근 상업보험 라인의
+        마진 확대(지속적인 요율 인상 모멘텀)와 개인보험 부문의 안정화가 맞물려 견조한 이익
+        성장 궤적을 만들고 있다. 우수한 ROE에도 불구하고 밸류에이션은 동종업계 대비 여전히
+        부담스럽지 않은 수준이다.</p>
+
+        <h4>핵심 근거</h4>
+        <ul>
+          <li><b>상업보험 마진 확대:</b> 3분기 핵심 상업보험 마진이 전년比 120bp 개선, 요율 인상이 손해율 추세를 상회.</li>
+          <li><b>자본환원 수익률:</b> 강한 잉여현금흐름이 배당+자사주 매입 합산 수익률 약 6.5%를 뒷받침.</li>
+          <li><b>준비금 적정성:</b> 장기 손해보험 라인에 걸친 세부 검토 결과 준비금 포지션이 견고, 섹터 리스크 요인 완화.</li>
+        </ul>
+
+        <div class="vctx">
+          <div><span class="lab">Value: 85 (High)</span><div class="mt"><div class="mtf" style="width:85%;background:var(--good)"></div></div></div>
+          <div><span class="lab">Momentum: 70 (Med)</span><div class="mt"><div class="mtf" style="width:70%;background:var(--accent)"></div></div></div>
+        </div>
+      </div>
+
+      <div class="panel" style="padding:0;">
+        <h3 style="padding:16px 17px 0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>Session History</h3>
+        <div class="hist-list" id="histlist"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= LOG ============= -->
+  <section class="panel-view" id="view-log">
+    <div class="panel" style="max-width:820px;">
+      <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Agent Execution Log</h3>
+      <div class="tl" id="logtl"></div>
+    </div>
+  </section>
+
+  <div class="foot">디자인 컨셉 참고 재구현 · design requirements define.html 토큰 기준 · 의사결정 지원용이며 투자자문이 아닙니다</div>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+
+  // ---- theme toggle (data-theme attribute, no framework race) ----
+  const themebtn = $('#themebtn');
+  const curTheme = () => document.documentElement.getAttribute('data-theme')
+     || (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  themebtn.onclick = ()=>document.documentElement.setAttribute('data-theme', curTheme()==='dark'?'light':'dark');
+
+  // ---- tab switching: plain classList, single source of truth ----
+  const navtabs = document.querySelectorAll('.navtab');
+  const views = document.querySelectorAll('.panel-view');
+  function activateTab(targetId){
+    navtabs.forEach(b=>b.classList.toggle('active', b.dataset.target===targetId));
+    views.forEach(v=>v.classList.toggle('active', v.id===targetId));
+  }
+  navtabs.forEach(btn=>btn.addEventListener('click', ()=>activateTab(btn.dataset.target)));
+
+  // ---- decision badge helper ----
+  function badge(decision, conv){
+    const map = {buy:'BUY', sell:'SELL', hold:'HOLD'};
+    const levels = {Low:1, Medium:2, 'Medium-High':2, High:3};
+    const n = levels[conv] ?? 2;
+    const dots = [0,1,2].map(i=>`<i class="${i<n?'on':''}"></i>`).join('');
+    return `<span class="badge ${decision}">${map[decision]}<span class="conv" title="확신도: ${conv}">${dots}</span></span>`;
+  }
+
+  // ---- sector momentum ----
+  const sectors = [
+    ['Technology', 4.2], ['Healthcare', 2.1], ['Financials', -0.5], ['Energy', -1.8], ['Real Estate', -3.4]
+  ];
+  const maxAbs = Math.max(...sectors.map(s=>Math.abs(s[1])));
+  $('#sectormom').innerHTML = sectors.map(([name,d])=>{
+    const cls = d>0?'pos':(d<0?'neg':'flat');
+    const color = d>0?'var(--good)':(d<0?'var(--critical)':'var(--muted)');
+    const w = Math.max(4, Math.abs(d)/maxAbs*100);
+    return `<div class="momrow"><div class="top"><span>${name}</span><span class="d ${cls}">${d>0?'+':''}${d.toFixed(1)}%</span></div>`+
+      `<div class="mt" style="width:100%"><div class="mtf" style="width:${w}%;background:${color}"></div></div></div>`;
+  }).join('');
+
+  // ---- ticker carousel ----
+  const cards = [
+    {t:'NVDA', sect:'Technology', score:98.4, dec:'buy', conv:'High'},
+    {t:'HIG', sect:'Financials', score:92.1, dec:'buy', conv:'Medium-High'},
+    {t:'JPM', sect:'Financials', score:78.5, dec:'hold', conv:'Medium'},
+  ];
+  $('#carousel').innerHTML = cards.map(c=>
+    `<div class="tcard"><div class="row1"><div><span class="tk">${c.t}</span><span class="sect">${c.sect}</span></div>${badge(c.dec,c.conv)}</div>`+
+    `<div class="sc"><span>Score</span><span class="mono">${c.score}</span></div></div>`).join('');
+
+  // ---- ranking accordion: one-line summary first, V/M/Q/G + detail on expand ----
+  const rows = [
+    { t:'NVDA', sect:'Technology', dec:'buy', conv:'High',
+      summary: 'AI 반도체 수요 주도 강한 모멘텀 — 밸류에이션은 프리미엄 구간',
+      factors: [['Value',40],['Momentum',95],['Quality',80],['Growth',90]],
+      detail: [
+        '모멘텀·성장 점수가 업종 최상위 — 매출 성장 가속 국면',
+        '밸류에이션(V)은 상대적으로 낮아(고평가) 단기 조정 리스크 존재',
+      ] },
+    { t:'HIG', sect:'Financials', dec:'buy', conv:'Medium-High', open:true,
+      summary: 'PER 9.8배 · ROE 22.7% — 업종 내 최저 밸류에이션 + 최고 수익성',
+      factors: [['Value',85],['Momentum',70],['Quality',75],['Growth',60]],
+      detail: [
+        '상업보험 마진 확대 + 안정적 개인보험 부문이 이익 성장 뒷받침',
+        '최근 저항선 부근까지 상승해 단기 숨고르기 구간',
+      ], gotoResult:true },
+    { t:'JPM', sect:'Financials', dec:'hold', conv:'Medium',
+      summary: '최우량 수익성(ROE 16.5%)이나 밸류에이션은 셋 중 가장 비쌈 — 코어 보유형',
+      factors: [['Value',60],['Momentum',65],['Quality',85],['Growth',50]],
+      detail: [
+        'ROE·ROA 대형은행 최고 수준, Q1 실적 재가속 확인',
+        'P/TBV가 이미 높아 추가 상승은 이익 성장 지속 여부에 달림',
+      ] },
+  ];
+  const colorFor = v => v>=75?'var(--good)':(v>=45?'var(--accent)':'var(--muted)');
+  const factorBars = f => `<div class="factorgrid">`+f.map(([lab,v])=>
+    `<div class="f"><div class="lab">${lab}<b>${v}</b></div><div class="mt"><div class="mtf" style="width:${v}%;background:${colorFor(v)}"></div></div></div>`
+  ).join('')+`</div>`;
+  const chevron = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+  $('#stocklist').innerHTML = rows.map((r,i)=>
+    `<div class="stockrow ${r.open?'open':''}" data-idx="${i}">`+
+      `<div class="stockrow-main" role="button" tabindex="0" aria-expanded="${!!r.open}">`+
+        `<span class="tkr">${r.t}</span>`+
+        `<span class="sect-tag">${r.sect}</span>`+
+        `<span class="summary" title="${r.summary}">${r.summary}</span>`+
+        `${badge(r.dec, r.conv)}`+
+        `<span class="chev">${chevron}</span>`+
+      `</div>`+
+      `<div class="stockrow-detail-wrap"><div class="stockrow-detail"><div class="stockrow-detail-in">`+
+        factorBars(r.factors)+
+        `<ul>${r.detail.map(d=>`<li>${d}</li>`).join('')}</ul>`+
+        (r.gotoResult ? `<button class="golink" data-goto-result="1">결과 탭에서 전체 분석 보기 →</button>` : '')+
+      `</div></div></div>`+
+    `</div>`
+  ).join('');
+
+  // toggle expand on row click (but not when the "결과 탭" link inside is clicked)
+  $('#stocklist').addEventListener('click', (e)=>{
+    const golink = e.target.closest('[data-goto-result]');
+    if(golink){ activateTab('view-result'); return; }
+    const main = e.target.closest('.stockrow-main');
+    if(!main) return;
+    const row = main.closest('.stockrow');
+    const isOpen = row.classList.toggle('open');
+    main.setAttribute('aria-expanded', String(isOpen));
+  });
+  $('#stocklist').addEventListener('keydown', (e)=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const main = e.target.closest('.stockrow-main');
+    if(!main) return;
+    e.preventDefault();
+    main.click();
+  });
+
+  // ---- session history ----
+  const hist = [
+    {time:'오늘, 09:41', ttl:'HIG Detailed Analysis', desc:'상업보험 마진과 밸류에이션 딥다이브', sel:true},
+    {time:'어제, 14:22', ttl:'C, JPM, HIG 비교', desc:'대형 금융주 멀티팩터 랭킹'},
+    {time:'10/24, 11:05', ttl:'Tech Sector Momentum Scan', desc:'NVDA를 주요 브레이크아웃 후보로 식별'},
+  ];
+  $('#histlist').innerHTML = hist.map(h=>
+    `<div class="hist-item ${h.sel?'sel':''}"><span class="time mono">${h.time}</span><span class="ttl">${h.ttl}</span><span class="desc">${h.desc}</span></div>`).join('');
+
+  // ---- log timeline (matches dashboard_plan_v1.md §4.2 transcript convention) ----
+  const tl = [
+    {kind:'프롬프트', ts:'10:32:45', cls:'text', body:'/trade-decision HIG, 2026-07-11 기준으로 분석'},
+    {kind:'Agent 호출', ts:'10:32:47', cls:'', body:'fundamental-analyst, technical-analyst, news-analyst 병렬 실행'},
+    {kind:'Bash', ts:'10:32:51', cls:'', body:'<code>python scripts/market_data.py fundamentals HIG</code>'},
+    {kind:'오류', ts:'10:33:02', cls:'error', body:'FRED_API_KEY 미설정 → DATA_UNAVAILABLE (macro 지표 생략)'},
+    {kind:'완료', ts:'10:37:02', cls:'text', body:'BUY · Medium-High · journal.py decision 기록됨'},
+  ];
+  $('#logtl').innerHTML = tl.map(t=>
+    `<div class="tlrow ${t.cls}"><div class="head"><span class="kind">${t.kind}</span><span class="ts mono">${t.ts}</span></div>`+
+    `<div class="body">${t.body}</div></div>`).join('');
+})();
+</script>
+</body>
+</html>
