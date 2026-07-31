@@ -271,6 +271,17 @@ def get_stockstats_indicator(
     return str(indicator_value)
 
 
+def _format_epoch_date(epoch_seconds):
+    """yfinance returns some date fields (e.g. exDividendDate) as unix epoch
+    seconds; render them as YYYY-MM-DD, or None through untouched."""
+    if epoch_seconds is None:
+        return None
+    try:
+        return datetime.utcfromtimestamp(epoch_seconds).strftime("%Y-%m-%d")
+    except (TypeError, ValueError, OSError):
+        return None
+
+
 def get_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
     curr_date: Annotated[str, "current date (not used for yfinance)"] = None
@@ -296,6 +307,10 @@ def get_fundamentals(
             ("EPS (TTM)", info.get("trailingEps")),
             ("Forward EPS", info.get("forwardEps")),
             ("Dividend Yield", info.get("dividendYield")),
+            ("Dividend Rate (annual $/share)", info.get("dividendRate")),
+            ("Payout Ratio", info.get("payoutRatio")),
+            ("5Y Avg Dividend Yield", info.get("fiveYearAvgDividendYield")),
+            ("Ex-Dividend Date", _format_epoch_date(info.get("exDividendDate"))),
             ("Beta", info.get("beta")),
             ("52 Week High", info.get("fiftyTwoWeekHigh")),
             ("52 Week Low", info.get("fiftyTwoWeekLow")),

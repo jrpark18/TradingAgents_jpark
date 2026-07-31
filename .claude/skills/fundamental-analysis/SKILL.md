@@ -58,6 +58,11 @@ to see multi-year trends.
    - **Growth** — revenue and EPS growth, QoQ and YoY; is it accelerating or decelerating?
    - **Financial health** — debt/equity, current ratio, interest coverage, cash runway.
    - **Cash generation** — operating & free cash flow, FCF margin, buybacks/dividends.
+   - **Dividend metrics** — always report, even for non-payers (state "no dividend"
+     explicitly rather than omitting the section). Pull straight from
+     `fundamentals`: Dividend Yield, Dividend Rate ($/share), Payout Ratio,
+     5-Year Avg Dividend Yield, Ex-Dividend Date. Flag payout ratio > ~75% or a
+     yield far above the 5-year average as a sustainability watch-item.
    - **Signals** — insider transactions, notable one-offs, guidance if present.
 3. **Handle missing data honestly.** If the CLI returns `NO_DATA_AVAILABLE` or
    `DATA_UNAVAILABLE`, say the metric is unavailable — never estimate or invent
@@ -67,11 +72,11 @@ to see multi-year trends.
 
 A markdown report:
 - **Summary** (3–5 sentences): the fundamental thesis in plain terms.
-- **Sections** for valuation, profitability, growth, financial health, cash flow.
+- **Sections** for valuation, profitability, growth, financial health, cash flow, dividend metrics.
 - **Risks & watch-items.**
 - A **key-metrics table** at the end (metric | value | trend | read). Valuation
   rows lead with forward multiples (Forward P/E, forward PEG, etc.); include
-  ROE and ROIC as separate rows.
+  ROE and ROIC as separate rows, plus Dividend Yield and Payout Ratio.
 - A one-line **fundamental lean: BUY / HOLD / SELL** with the single strongest
   supporting fact. This is *only* the fundamental view — position sizing and the
   final call belong to `trade-decision`.

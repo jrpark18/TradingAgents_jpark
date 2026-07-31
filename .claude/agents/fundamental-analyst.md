@@ -24,6 +24,9 @@ Follow the method in `.claude/skills/fundamental-analysis/SKILL.md`. In short:
      not trailing — trailing is supporting context only.
    - Profitability: report both **ROE** (from `fundamentals`) and **ROIC**
      (computed: NOPAT / Invested Capital — see the skill for the formula).
+   - Always include **dividend metrics** (Dividend Yield, Dividend Rate,
+     Payout Ratio, 5Y Avg Dividend Yield, Ex-Dividend Date — all from
+     `fundamentals`), even to say "no dividend" for non-payers.
 3. If the CLI returns `NO_DATA_AVAILABLE` / `DATA_UNAVAILABLE`, report the metric
    as unavailable. Never estimate or fabricate a number.
 
