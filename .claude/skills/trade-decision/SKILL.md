@@ -50,7 +50,7 @@ trading decision. This is the top-level skill the other three feed into.
    what's the downside, is the risk/reward acceptable? Adjust conviction or move
    to HOLD if the setup is poor.
 
-5. **Chart.** Render a 1-year daily candlestick chart (with 20/40/60/120/240-day
+5. **Chart.** Render a 2-year daily candlestick chart (with 20/40/60/120/240-day
    MA overlays and a volume panel) for the ticker:
 
    ```bash

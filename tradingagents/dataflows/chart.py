@@ -22,7 +22,7 @@ def render_candlestick_chart(
     symbol: Annotated[str, "ticker symbol"],
     curr_date: Annotated[str, "as-of date, YYYY-MM-DD"],
     out_path: Annotated[str, "PNG file path to write"],
-    days: Annotated[int, "trailing calendar days of history to plot"] = 365,
+    days: Annotated[int, "trailing calendar days of history to plot"] = 730,
     ma_periods: Annotated[Sequence[int], "moving-average windows to overlay"] = DEFAULT_MA_PERIODS,
 ) -> str:
     """Render a candlestick chart with MA overlays and a volume panel (4:1

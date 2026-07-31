@@ -212,7 +212,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("symbol")
     add_date(sp)
     sp.add_argument("--out", required=True, help="Output PNG file path")
-    sp.add_argument("--days", type=int, default=365, help="Trailing calendar days to plot (default 365)")
+    sp.add_argument("--days", type=int, default=730, help="Trailing calendar days to plot (default 730)")
     sp.add_argument(
         "--ma",
         default="20,40,60,120,240",
