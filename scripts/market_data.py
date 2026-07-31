@@ -115,6 +115,28 @@ def cmd_prediction_markets(a: argparse.Namespace) -> int:
     return _run("get_prediction_markets", a.topic, a.limit)
 
 
+def cmd_chart(a: argparse.Namespace) -> int:
+    from tradingagents.dataflows.chart import render_candlestick_chart
+    from tradingagents.dataflows.symbol_utils import NoMarketDataError
+
+    try:
+        ma_periods = [int(p.strip()) for p in a.ma.split(",") if p.strip()]
+    except ValueError:
+        print(f"ERROR: --ma must be a comma-separated list of integers, got {a.ma!r}", file=sys.stderr)
+        return 1
+
+    try:
+        path = render_candlestick_chart(a.symbol, a.date, a.out, days=a.days, ma_periods=ma_periods)
+    except NoMarketDataError as exc:
+        print(f"NO_DATA_AVAILABLE: {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:  # noqa: BLE001 - CLI boundary: report, don't traceback
+        print(f"ERROR generating chart for {a.symbol}: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 1
+    print(path)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="market_data.py",
@@ -185,6 +207,18 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("topic")
     sp.add_argument("--limit", type=int, default=5, help="Max markets (default 5)")
     sp.set_defaults(func=cmd_prediction_markets)
+
+    sp = sub.add_parser("chart", help="Candlestick + volume PNG chart (needs the [chart] extra)")
+    sp.add_argument("symbol")
+    add_date(sp)
+    sp.add_argument("--out", required=True, help="Output PNG file path")
+    sp.add_argument("--days", type=int, default=365, help="Trailing calendar days to plot (default 365)")
+    sp.add_argument(
+        "--ma",
+        default="20,40,60,120,240",
+        help="Comma-separated MA windows to overlay (default 20,40,60,120,240)",
+    )
+    sp.set_defaults(func=cmd_chart)
 
     return p
 

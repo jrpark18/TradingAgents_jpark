@@ -51,6 +51,11 @@ bedrock = [
 scanner = [
     "lxml>=5.0",
 ]
+# Candlestick chart rendering (scripts/market_data.py chart).
+# pip install "tradingagents[chart]"
+chart = [
+    "mplfinance>=0.12.10b0",
+]
 
 [project.scripts]
 tradingagents = "cli.main:app"
